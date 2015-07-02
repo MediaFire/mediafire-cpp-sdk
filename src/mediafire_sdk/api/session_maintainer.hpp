@@ -243,12 +243,14 @@ private:
 
     uint32_t timeout_seconds_;
 
-    enum class Running
+    enum class Exists
     {
         Yes,
         No
     };
-    std::shared_ptr<Running> is_running_;
+    /** This does the same job as a weak pointer would, but this class doesn't
+        enforce being shared. */
+    std::shared_ptr<Exists> maintainer_exists_;
 
     api::SessionState GetSessionState();
     void SetSessionState(api::SessionState);

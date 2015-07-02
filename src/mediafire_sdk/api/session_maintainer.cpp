@@ -85,73 +85,60 @@ SessionMaintainer::SessionMaintainer(
 
 SessionMaintainer::SessionMaintainer(
         mf::http::HttpConfig::ConstPointer http_config,
-        std::string hostname
-    ) :
-    locker_(
-        new detail::SessionMaintainerLocker(
-            http_config->GetWorkIoService(),
-            http_config->GetDefaultCallbackIoService(),
-            [this](
-                    STRequest request,
-                    const std::error_code & ec
-                )
-            {
-                if (!ec)
-                    AddWaitingRequest(request);
-            })),
-    http_config_(http_config),
-    session_token_failure_timer_(*http_config_->GetWorkIoService()),
-    connection_state_recheck_timer_(*http_config_->GetWorkIoService()),
-    requester_(http_config_, hostname),
-    timeout_seconds_(60),
-    is_running_(std::make_shared<Running>(Running::Yes))
+        std::string hostname)
+        : locker_(new detail::SessionMaintainerLocker(
+                  http_config->GetWorkIoService(),
+                  http_config->GetDefaultCallbackIoService(),
+                  [this](STRequest request, const std::error_code & ec)
+                  {
+                      if (!ec)
+                          AddWaitingRequest(request);
+                  })),
+          http_config_(http_config),
+          session_token_failure_timer_(*http_config_->GetWorkIoService()),
+          connection_state_recheck_timer_(*http_config_->GetWorkIoService()),
+          requester_(http_config_, hostname),
+          timeout_seconds_(60),
+          maintainer_exists_(std::make_shared<Exists>(Exists::Yes))
 {
     assert(http_config);
 
-    auto running_ptr = is_running_;
+    auto maintainer_exists = maintainer_exists_;
 
     // Setup request callbacks
-    on_stop_request_callback_ = [this, running_ptr](
-            detail::STRequest request,
-            ResponseBase * response
-        )
+    on_stop_request_callback_ = [this, maintainer_exists](
+            detail::STRequest request, ResponseBase * response)
     {
-        if (*running_ptr == Running::Yes)
+        if (*maintainer_exists == Exists::Yes)
             HandleCompletion(request, response);
         else
             request->Cancel();
     };
 
-    on_retry_request_callback_ = [this, running_ptr](
-            detail::STRequest request,
-            ResponseBase * response
-        )
+    on_retry_request_callback_ = [this, maintainer_exists](
+            detail::STRequest request, ResponseBase * response)
     {
-        if (*running_ptr == Running::Yes)
+        if (*maintainer_exists == Exists::Yes)
             HandleRetryRequest(request, response);
         else
             request->Cancel();
     };
 
-    info_update_callback_ = [this, running_ptr](
-            detail::STRequest request,
-            ResponseBase * response
-        )
+    info_update_callback_ = [this, maintainer_exists](detail::STRequest request,
+                                                      ResponseBase * response)
     {
-        if (*running_ptr == Running::Yes)
+        if (*maintainer_exists == Exists::Yes)
             HandleCompletionNotification(request, response);
     };
 }
 
 SessionMaintainer::~SessionMaintainer()
 {
-    *is_running_ = Running::No;
+    *maintainer_exists_ = Exists::No;
     session_token_failure_timer_.cancel();
 }
 
-void SessionMaintainer::SetLoginCredentials(
-        const Credentials & credentials
-    )
+void SessionMaintainer::SetLoginCredentials(const Credentials & credentials)
 {
     locker_->SetCredentials(credentials);
 
@@ -159,15 +146,13 @@ void SessionMaintainer::SetLoginCredentials(
     AttemptRequests();
 }
 
-void SessionMaintainer::HandleCompletion(
-        STRequest request,
-        ResponseBase * response
-    )
+void SessionMaintainer::HandleCompletion(STRequest request,
+                                         ResponseBase * response)
 {
     locker_->RemoveInProgressRequest(request);
 
     // Reuse token later if possible
-    if ( IsInvalidSessionTokenError(response->error_code) )
+    if (IsInvalidSessionTokenError(response->error_code))
         locker_->DeleteCheckedOutToken(request);
     else
         locker_->ReuseToken(request, response);
@@ -176,20 +161,18 @@ void SessionMaintainer::HandleCompletion(
     AttemptRequests();
 }
 
-void SessionMaintainer::HandleRetryRequest(
-        STRequest request,
-        ResponseBase * response
-    )
+void SessionMaintainer::HandleRetryRequest(STRequest request,
+                                           ResponseBase * response)
 {
     // Put the request back on the queue. Give it a new token when available.
     {
-        if ( IsInvalidSessionTokenError(response->error_code) )
-        {   // Token invalid- delete it
-            locker_->MoveInProgressToWaiting( request );
-            locker_->DeleteCheckedOutToken( request );
+        if (IsInvalidSessionTokenError(response->error_code))
+        {  // Token invalid- delete it
+            locker_->MoveInProgressToWaiting(request);
+            locker_->DeleteCheckedOutToken(request);
         }
         else
-        {   // Reuse token later
+        {  // Reuse token later
             locker_->MoveInProgressToDelayed(request, 1);
             locker_->ReuseToken(request, response);
         }
@@ -199,32 +182,28 @@ void SessionMaintainer::HandleRetryRequest(
     AttemptRequests();
 }
 
-void SessionMaintainer::HandleCompletionNotification(
-        STRequest /* request */,
-        ResponseBase * response
-    )
+void SessionMaintainer::HandleCompletionNotification(STRequest /* request */,
+                                                     ResponseBase * response)
 {
     UpdateConnectionStateFromErrorCode(response->error_code);
 }
 
 void SessionMaintainer::UpdateConnectionStateFromErrorCode(
-        const std::error_code & ec
-    )
+        const std::error_code & ec)
 {
     using hl::http_error;
 
     if (ec)
     {
-        if ( ec.category() == hl::http_category()
-            && (    ec == http_error::UnableToConnect
-                ||  ec == http_error::UnableToConnectToProxy
-                ||  ec == http_error::UnableToResolve
-                ||  ec == http_error::SslHandshakeFailure
-                ||  ec == http_error::WriteFailure
-                ||  ec == http_error::ReadFailure
-                ||  ec == http_error::ProxyProtocolFailure
-                ||  ec == http_error::IoTimeout
-            ))
+        if (ec.category() == hl::http_category()
+            && (ec == http_error::UnableToConnect
+                || ec == http_error::UnableToConnectToProxy
+                || ec == http_error::UnableToResolve
+                || ec == http_error::SslHandshakeFailure
+                || ec == http_error::WriteFailure
+                || ec == http_error::ReadFailure
+                || ec == http_error::ProxyProtocolFailure
+                || ec == http_error::IoTimeout))
         {
             connection_state::Unconnected new_state = {ec};
 
@@ -232,14 +211,11 @@ void SessionMaintainer::UpdateConnectionStateFromErrorCode(
 
             // State is disconnected, so schedule a state check later
             connection_state_recheck_timer_.expires_from_now(
-                std::chrono::milliseconds(connection_state_recheck_timeout_ms));
-            connection_state_recheck_timer_.async_wait(
-                    boost::bind(
-                        &SessionMaintainer::HandleConnectionStateRecheckTimeout,
-                        this,
-                        boost::asio::placeholders::error
-                    )
-                );
+                    std::chrono::milliseconds(
+                            connection_state_recheck_timeout_ms));
+            connection_state_recheck_timer_.async_wait(boost::bind(
+                    &SessionMaintainer::HandleConnectionStateRecheckTimeout,
+                    this, boost::asio::placeholders::error));
         }
         else
         {
@@ -256,7 +232,7 @@ void SessionMaintainer::UpdateConnectionStateFromErrorCode(
 #define ATTEMPT_REQUEST_DEBUG(x)                                               \
     std::cout << "SessionMaintainer::AttemptRequests: " << x;
 #else
-#  define ATTEMPT_REQUEST_DEBUG(x)
+#define ATTEMPT_REQUEST_DEBUG(x)
 #endif
 
 void SessionMaintainer::AttemptRequests()
@@ -271,8 +247,8 @@ void SessionMaintainer::AttemptRequests()
     }
 
     // Handle requests that do not use session tokens.
-    boost::optional< STRequest > opt_request;
-    while ( (opt_request = locker_->NextWaitingNonSessionTokenRequest()) )
+    boost::optional<STRequest> opt_request;
+    while ((opt_request = locker_->NextWaitingNonSessionTokenRequest()))
     {
         STRequest & request = *opt_request;
 
@@ -282,23 +258,19 @@ void SessionMaintainer::AttemptRequests()
     }
 
     // Handle requests that have session tokens.
-    boost::optional< std::pair<STRequest, SessionTokenData> > request_pair;
+    boost::optional<std::pair<STRequest, SessionTokenData>> request_pair;
     ATTEMPT_REQUEST_DEBUG("Session state: "
-        << GetSessionState() << " is running: " << IsRunning(GetSessionState())
-        << "\n")
+                          << GetSessionState() << " is running: "
+                          << IsRunning(GetSessionState()) << "\n")
 
-    while ( IsRunning(GetSessionState())
-        && (request_pair = locker_->NextWaitingSessionTokenRequest()) )
+    while (IsRunning(GetSessionState())
+           && (request_pair = locker_->NextWaitingSessionTokenRequest()))
     {
         ATTEMPT_REQUEST_DEBUG("Found waiting session token request.\n")
         SessionTokenData & st = request_pair->second;
         STRequest & request = request_pair->first;
 
-        request->SetSessionToken(
-                st.session_token,
-                st.time,
-                st.secret_key
-            );
+        request->SetSessionToken(st.session_token, st.time, st.secret_key);
         request->Init(&requester_);
 
         locker_->AddInProgressRequest(std::move(request), std::move(st));
@@ -315,13 +287,14 @@ void SessionMaintainer::AttemptRequests()
 
 void SessionMaintainer::AttemptConnection()
 {
-    auto running_ptr = is_running_;
+    auto maintainer_exists = maintainer_exists_;
 
     hl::HttpRequest::Pointer http_request = requester_.Call(
             system::get_status::Request(),
-            [this, running_ptr](const system::get_status::Response & response)
+            [this, maintainer_exists](
+                    const system::get_status::Response & response)
             {
-                if (*running_ptr == Running::Yes)
+                if (*maintainer_exists == Exists::Yes)
                     HandleCheckConnectionStatusResponse(response);
             },
             RequestStarted::No);
@@ -390,14 +363,16 @@ bool SessionMaintainer::TryRequestSessionToken(const Credentials & credentials)
                   << std::endl;
 #endif
 
-        auto running_ptr = is_running_;
+        auto maintainer_exists = maintainer_exists_;
 
         hl::HttpRequest::Pointer http_request = requester_.Call(
                 user::get_session_token::Request(credentials),
-                [this, running_ptr, credentials](
+                [this, maintainer_exists, credentials](
                         const user::get_session_token::Response & response)
                 {
-                    if (*running_ptr == Running::Yes)
+                    //  If not running, then we have shut down and token counts
+                    //  are irrelevant.
+                    if (*maintainer_exists == Exists::Yes)
                         HandleSessionTokenResponse(response, credentials);
                 },
                 RequestStarted::No);
@@ -425,8 +400,8 @@ void SessionMaintainer::HandleSessionTokenResponse(
     SessionState session_state;
     uint32_t session_state_change_count;
 
-    std::tie(session_state, session_state_change_count) =
-        locker_->GetSessionState();
+    std::tie(session_state, session_state_change_count)
+            = locker_->GetSessionState();
 
     UpdateConnectionStateFromErrorCode(response.error_code);
 
@@ -514,12 +489,12 @@ void SessionMaintainer::HandleSessionTokenResponse(
     }
     else
     {
-        // Session token is good.
+// Session token is good.
 
-#       ifdef OUTPUT_DEBUG // Debug code
+#ifdef OUTPUT_DEBUG  // Debug code
         std::cout << "SessionMaintainer: Session token request success."
-            << std::endl;
-#       endif
+                  << std::endl;
+#endif
 
         locker_->ResetFailureCount();
 
@@ -534,9 +509,7 @@ void SessionMaintainer::HandleSessionTokenResponse(
             // not uninitialized.
             if (!IsUninitialized(session_state) && !IsRunning(session_state))
             {
-                session_state::Running new_state = {response};
-
-                locker_->SetSessionStateSafe(new_state,
+                locker_->SetSessionStateSafe(session_state::Running{response},
                                              session_state_change_count);
             }
         }
@@ -556,8 +529,7 @@ void SessionMaintainer::HandleSessionTokenResponse(
 }
 
 void SessionMaintainer::HandleSessionTokenFailureTimeout(
-        const boost::system::error_code & err
-    )
+        const boost::system::error_code & err)
 {
     if (!err)
     {
@@ -567,25 +539,21 @@ void SessionMaintainer::HandleSessionTokenFailureTimeout(
 }
 
 void SessionMaintainer::HandleConnectionStateRecheckTimeout(
-        const boost::system::error_code & err
-    )
+        const boost::system::error_code & err)
 {
-    if ( !err )
+    if (!err)
     {
         AttemptRequests();
     }
 }
 
-void SessionMaintainer::AddWaitingRequest(
-        STRequest request
-    )
+void SessionMaintainer::AddWaitingRequest(STRequest request)
 {
     locker_->AddWaitingRequest(request);
     AttemptRequests();
 }
 
-SessionState
-SessionMaintainer::GetSessionState()
+SessionState SessionMaintainer::GetSessionState()
 {
     return locker_->GetSessionState().first;
 }
@@ -595,37 +563,29 @@ void SessionMaintainer::SetSessionState(SessionState state)
     return locker_->SetSessionState(state);
 }
 
-ConnectionState
-SessionMaintainer::GetConnectionState()
+ConnectionState SessionMaintainer::GetConnectionState()
 {
     return locker_->GetConnectionState();
 }
 
-void SessionMaintainer::SetConnectionState(
-        const ConnectionState & state
-    )
+void SessionMaintainer::SetConnectionState(const ConnectionState & state)
 {
     return locker_->SetConnectionState(state);
 }
 
 void SessionMaintainer::SetSessionStateChangeCallback(
-        SessionStateChangeCallback callback
-    )
+        SessionStateChangeCallback callback)
 {
     return locker_->SetSessionStateChangeCallback(callback);
 }
 
 void SessionMaintainer::SetConnectionStateChangeCallback(
-        ConnectionStateChangeCallback callback
-    )
+        ConnectionStateChangeCallback callback)
 {
     return locker_->SetConnectionStateChangeCallback(callback);
 }
 
-void SessionMaintainer::StopTimeouts()
-{
-    locker_->StopTimeouts();
-}
+void SessionMaintainer::StopTimeouts() { locker_->StopTimeouts(); }
 
 }  // namespace api
 }  // namespace mf
