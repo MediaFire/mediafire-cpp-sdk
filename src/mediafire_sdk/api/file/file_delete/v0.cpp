@@ -80,14 +80,22 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.device_revision",
-            &response->device_revision ) )
+            &response_data_ptr->device_revision ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.device_revision\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

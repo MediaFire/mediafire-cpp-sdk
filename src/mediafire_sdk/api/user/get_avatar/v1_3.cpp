@@ -74,14 +74,22 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.avatar",
-            &response->avatar_url ) )
+            &response_data_ptr->avatar_url ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.avatar\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

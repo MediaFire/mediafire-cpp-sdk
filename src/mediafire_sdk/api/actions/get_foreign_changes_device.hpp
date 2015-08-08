@@ -22,9 +22,11 @@ public:
     using DeviceGetForeignChangesRequestType = TDeviceGetForeignChangesRequest;
     using DeviceGetForeignChangesResponseType =
             typename DeviceGetForeignChangesRequestType::ResponseType;
+    using DeviceGetForeignChangesResponseDataType =
+            typename DeviceGetForeignChangesRequestType::ResponseDataType;
 
-    using File = typename DeviceGetForeignChangesResponseType::File;
-    using Folder = typename DeviceGetForeignChangesResponseType::Folder;
+    using File = typename DeviceGetForeignChangesResponseDataType::File;
+    using Folder = typename DeviceGetForeignChangesResponseDataType::Folder;
 
     // The struct for the errors we might returnu
     struct DeviceGetForeignChangesErrorType

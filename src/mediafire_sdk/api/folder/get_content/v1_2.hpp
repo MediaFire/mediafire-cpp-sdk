@@ -129,10 +129,12 @@ enum class ChunksRemaining
 };
 
 /**
- * @class Response
- * @brief Response from API request "folder/get_content"
+ * @class ResponseData
+ * @brief Response data from API request "folder/get_content"
+ *
+ * This data is only available if the API request was successful.
  */
-class Response : public ResponseBase
+class ResponseData
 {
 public:
     struct Links
@@ -300,6 +302,17 @@ public:
     std::vector<Folder> folders;
 };
 
+/**
+ * @class Response
+ * @brief Response from API request "folder/get_content"
+ */
+class Response : public ResponseBase
+{
+public:
+    /** Parsed API response on successful parse. */
+    boost::optional<ResponseData> response_data;
+};
+
 class Impl;
 
 /**
@@ -382,7 +395,10 @@ public:
     // Remaining functions are for use by API library only. --------------------
 
     /** Requester/SessionMaintainer expected type. */
-    typedef Response ResponseType;
+    using ResponseType = Response;
+
+    /** Requester/SessionMaintainer expected type. */
+    using ResponseDataType = ResponseData;
 
     /** Requester/SessionMaintainer expected type. */
     typedef std::function< void( const ResponseType & data)> CallbackType;

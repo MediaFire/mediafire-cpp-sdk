@@ -26,10 +26,12 @@ namespace get_info {
 namespace v0 {
 
 /**
- * @class Response
- * @brief Response from API request "system/get_info"
+ * @class ResponseData
+ * @brief Response data from API request "system/get_info"
+ *
+ * This data is only available if the API request was successful.
  */
-class Response : public ResponseBase
+class ResponseData
 {
 public:
     struct ImageSize
@@ -85,6 +87,17 @@ public:
     uint64_t max_image_size;
 };
 
+/**
+ * @class Response
+ * @brief Response from API request "system/get_info"
+ */
+class Response : public ResponseBase
+{
+public:
+    /** Parsed API response on successful parse. */
+    boost::optional<ResponseData> response_data;
+};
+
 class Impl;
 
 /**
@@ -102,7 +115,10 @@ public:
     // Remaining functions are for use by API library only. --------------------
 
     /** Requester/SessionMaintainer expected type. */
-    typedef Response ResponseType;
+    using ResponseType = Response;
+
+    /** Requester/SessionMaintainer expected type. */
+    using ResponseDataType = ResponseData;
 
     /** Requester/SessionMaintainer expected type. */
     typedef std::function< void( const ResponseType & data)> CallbackType;

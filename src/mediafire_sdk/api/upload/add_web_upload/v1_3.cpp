@@ -85,14 +85,22 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.upload_key",
-            &response->upload_key ) )
+            &response_data_ptr->upload_key ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.upload_key\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

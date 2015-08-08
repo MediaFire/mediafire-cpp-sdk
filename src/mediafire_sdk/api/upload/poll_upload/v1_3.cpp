@@ -27,7 +27,7 @@ namespace {
 using namespace v1_3;  // NOLINT
 bool ResumableDataFromPropertyBranch(
         Response * response,
-        Response::ResumableData * value,
+        ResponseData::ResumableData * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -200,13 +200,18 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->fileerror = 0;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->fileerror = 0;
 
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.doupload.result",
-            &response->result ) )
+            &response_data_ptr->result ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.doupload.result\"");
@@ -215,7 +220,7 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.doupload.fileerror",
-            &response->fileerror);
+            &response_data_ptr->fileerror);
 
     // create_content_parse_single optional no default
     {
@@ -225,7 +230,7 @@ void Impl::ParseResponse( Response * response )
                 "response.doupload.created",
                 &optarg) )
         {
-            response->created = optarg;
+            response_data_ptr->created = optarg;
         }
     }
 
@@ -237,7 +242,7 @@ void Impl::ParseResponse( Response * response )
                 "response.doupload.description",
                 &optarg) )
         {
-            response->description = optarg;
+            response_data_ptr->description = optarg;
         }
     }
 
@@ -249,7 +254,7 @@ void Impl::ParseResponse( Response * response )
                 "response.doupload.filename",
                 &optarg) )
         {
-            response->filename = optarg;
+            response_data_ptr->filename = optarg;
         }
     }
 
@@ -261,7 +266,7 @@ void Impl::ParseResponse( Response * response )
                 "response.doupload.hash",
                 &optarg) )
         {
-            response->hash = optarg;
+            response_data_ptr->hash = optarg;
         }
     }
 
@@ -273,7 +278,7 @@ void Impl::ParseResponse( Response * response )
                 "response.doupload.quickkey",
                 &optarg) )
         {
-            response->quickkey = optarg;
+            response_data_ptr->quickkey = optarg;
         }
     }
 
@@ -282,11 +287,11 @@ void Impl::ParseResponse( Response * response )
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.doupload.resumable_upload");
 
-        Response::ResumableData optarg;
+        ResponseData::ResumableData optarg;
         if ( ResumableDataFromPropertyBranch(
                 response, &optarg, branch) )
         {
-            response->resumable = std::move(optarg);
+            response_data_ptr->resumable = std::move(optarg);
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
@@ -302,7 +307,7 @@ void Impl::ParseResponse( Response * response )
                 "response.doupload.revision",
                 &optarg) )
         {
-            response->revision = optarg;
+            response_data_ptr->revision = optarg;
         }
     }
 
@@ -314,7 +319,7 @@ void Impl::ParseResponse( Response * response )
                 "response.doupload.size",
                 &optarg) )
         {
-            response->filesize = optarg;
+            response_data_ptr->filesize = optarg;
         }
     }
 
@@ -326,9 +331,12 @@ void Impl::ParseResponse( Response * response )
                 "response.doupload.status",
                 &optarg) )
         {
-            response->status = optarg;
+            response_data_ptr->status = optarg;
         }
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

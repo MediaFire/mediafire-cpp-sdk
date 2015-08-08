@@ -24,7 +24,7 @@
 #include "mediafire_sdk/api/error.hpp"
 #include "mediafire_sdk/utils/variant_comparison.hpp"
 
-#if ! defined(NDEBUG)
+#if !defined(NDEBUG)
 // Counter to keep track of number of HttpRequests
 boost::atomic<int> mf::api::detail::session_maintainer_request_count(0);
 #endif
@@ -34,7 +34,8 @@ namespace hl = mf::http;
 using mf::api::detail::STRequest;
 using mf::api::detail::SessionMaintainerRequest;
 
-namespace {
+namespace
+{
 namespace session_state = mf::api::session_state;
 using mf::api::SessionState;
 
@@ -74,12 +75,14 @@ bool IsUnconnected(const ConnectionState & state)
 }
 }  // namespace
 
-namespace mf {
-namespace api {
+namespace mf
+{
+namespace api
+{
 
 SessionMaintainer::SessionMaintainer(
-        mf::http::HttpConfig::ConstPointer http_config
-    ) : SessionMaintainer(http_config, "www.mediafire.com")
+        mf::http::HttpConfig::ConstPointer http_config)
+        : SessionMaintainer(http_config, "www.mediafire.com")
 {
 }
 
@@ -195,15 +198,13 @@ void SessionMaintainer::UpdateConnectionStateFromErrorCode(
 
     // Check for errors that we count as connection errors
     if (ec.category() == hl::http_category()
-        && (    ec == http_error::UnableToConnect
-            ||  ec == http_error::UnableToConnectToProxy
-            ||  ec == http_error::UnableToResolve
-            ||  ec == http_error::SslHandshakeFailure
-            ||  ec == http_error::WriteFailure
-            ||  ec == http_error::ReadFailure
-            ||  ec == http_error::ProxyProtocolFailure
-            ||  ec == http_error::IoTimeout
-        ))
+        && (ec == http_error::UnableToConnect
+            || ec == http_error::UnableToConnectToProxy
+            || ec == http_error::UnableToResolve
+            || ec == http_error::SslHandshakeFailure
+            || ec == http_error::WriteFailure || ec == http_error::ReadFailure
+            || ec == http_error::ProxyProtocolFailure
+            || ec == http_error::IoTimeout))
     {
         connection_state::Unconnected new_state = {ec};
 
@@ -211,11 +212,10 @@ void SessionMaintainer::UpdateConnectionStateFromErrorCode(
 
         // State is disconnected, so schedule a state check later
         connection_state_recheck_timer_.expires_from_now(
-                std::chrono::milliseconds(
-                        connection_state_recheck_timeout_ms));
+                std::chrono::milliseconds(connection_state_recheck_timeout_ms));
         connection_state_recheck_timer_.async_wait(boost::bind(
-                &SessionMaintainer::HandleConnectionStateRecheckTimeout,
-                this, boost::asio::placeholders::error));
+                &SessionMaintainer::HandleConnectionStateRecheckTimeout, this,
+                boost::asio::placeholders::error));
     }
     else
     {
@@ -285,7 +285,8 @@ void SessionMaintainer::AttemptConnection()
     auto maintainer_exists = maintainer_exists_;
 
 #if defined(OUTPUT_DEBUG) || defined(DEBUG_API_CONNECTION)
-    std::cout << "SessionMaintainer: Checking connection by calling system/get_status.\n";
+    std::cout << "SessionMaintainer: Checking connection by calling "
+                 "system/get_status.\n";
 #endif
 
     hl::HttpRequest::Pointer http_request = requester_.Call(
@@ -305,8 +306,8 @@ void SessionMaintainer::HandleCheckConnectionStatusResponse(
 {
 #if defined(OUTPUT_DEBUG) || defined(DEBUG_API_CONNECTION)
     std::cout << "SessionMaintainer: system/get_status response: "
-            << response.error_code.message() << "\n" << response.debug
-            << std::endl;
+              << response.error_code.message() << "\n" << response.debug
+              << std::endl;
 #endif
 
     UpdateConnectionStateFromErrorCode(response.error_code);
@@ -445,8 +446,8 @@ void SessionMaintainer::HandleSessionTokenResponse(
 
                     // If the pkey was sent, then the password may have been
                     // changed.  Let the class user figure this out if so.
-                    if (!response.pkey.empty())
-                        new_state.pkey = response.pkey;
+                    if (!response.pkey)
+                        new_state.pkey = *response.pkey;
 
                     // This async call used the same credentials we currently
                     // have!  This means the username and password is bad.
@@ -504,13 +505,12 @@ void SessionMaintainer::HandleSessionTokenResponse(
         std::cout << "SessionMaintainer: Session token request success."
                   << std::endl;
 #endif
+        const auto & data = *response.response_data;
 
         locker_->ResetFailureCount();
 
-        SessionTokenData st = {response.session_token,
-                               response.pkey,
-                               response.time,
-                               response.secret_key};
+        SessionTokenData st = {
+                data.session_token, response.pkey, data.time, data.secret_key};
 
         if (locker_->AddSessionToken(std::move(st), old_credentials))
         {

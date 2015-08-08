@@ -27,7 +27,7 @@ namespace {
 using namespace v0;  // NOLINT
 bool ContactFromPropertyBranch(
         Response * response,
-        Response::Contact * value,
+        ResponseData::Contact * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -109,24 +109,32 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_struct_parse TArray
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.contacts");
-        response->contacts.reserve( response->pt.size() );
+        response_data_ptr->contacts.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::Contact optarg;
+            ResponseData::Contact optarg;
             if ( ContactFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->contacts.push_back(std::move(optarg));
+                response_data_ptr->contacts.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
     {
         // Is optional
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

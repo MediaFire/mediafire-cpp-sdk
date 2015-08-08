@@ -70,7 +70,7 @@ void GetForeignChangesDevice<TDeviceGetForeignChangesRequest>::CoroutineBody(
                 [this, self, start_revision](
                         const DeviceGetForeignChangesResponseType & response)
         {
-            if (response.error_code)
+            if (!response.response_data)
             {
                 // If there was an error, insert
                 // into vector and
@@ -82,29 +82,31 @@ void GetForeignChangesDevice<TDeviceGetForeignChangesRequest>::CoroutineBody(
             }
             else
             {
+                const auto & data = *response.response_data;
+
                 updated_files_.insert(std::end(updated_files_),
-                                      std::begin(response.updated_files),
-                                      std::end(response.updated_files));
+                                      std::begin(data.updated_files),
+                                      std::end(data.updated_files));
 
                 //                            updated_folders_.insert(
                 //                                    std::end(updated_folders_),
-                //                                    std::begin(response.updated_folders),
-                //                                    std::end(response.updated_folders));
+                //                                    std::begin(data.updated_folders),
+                //                                    std::end(data.updated_folders));
 
                 // HACK around the API including "trash" inside
                 // updated_folders
-                for (const auto & folder : response.updated_folders)
+                for (const auto & folder : data.updated_folders)
                     if (folder.folderkey != "trash")
                         updated_folders_.push_back(folder);
 
                 deleted_files_.insert(std::end(deleted_files_),
-                                      std::begin(response.deleted_files),
-                                      std::end(response.deleted_files));
+                                      std::begin(data.deleted_files),
+                                      std::end(data.deleted_files));
                 deleted_folders_.insert(std::end(deleted_folders_),
-                                        std::begin(response.deleted_folders),
-                                        std::end(response.deleted_folders));
+                                        std::begin(data.deleted_folders),
+                                        std::end(data.deleted_folders));
 
-                latest_device_revision_ = response.device_revision;
+                latest_device_revision_ = data.device_revision;
             }
 
             request_ = nullptr;  // Must free request_ or coroutine cannot be
@@ -129,12 +131,8 @@ void GetForeignChangesDevice<TDeviceGetForeignChangesRequest>::CoroutineBody(
     }
 
     // Coroutine is done, so call the callback.
-    callback_(start_revision,
-              updated_files_,
-              updated_folders_,
-              deleted_files_,
-              deleted_folders_,
-              get_foreign_changes_errors_);
+    callback_(start_revision, updated_files_, updated_folders_, deleted_files_,
+              deleted_folders_, get_foreign_changes_errors_);
 }
 
 }  // namespace mf

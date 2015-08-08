@@ -124,24 +124,29 @@ void Fixture::WaitForAnyAsyncOperationsToComplete()
     Call(api::device::get_status::Request(),
          [&](const api::device::get_status::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  // Ignore error, try again
                  WaitForAnyAsyncOperationsToComplete();
              }
-             else if (response.async_jobs_in_progress
-                      == api::device::get_status::AsyncJobs::Stopped)
-             {
-                 Stop();
-             }
              else
              {
-                 if (!async_wait_logged_)
+                 const auto & data = *response.response_data;
+
+                 if (data.async_jobs_in_progress
+                     == api::device::get_status::AsyncJobs::Stopped)
                  {
-                     async_wait_logged_ = true;
-                     Log("Waiting for asynchronous operation to complete.");
+                     Stop();
                  }
-                 WaitForAnyAsyncOperationsToComplete();
+                 else
+                 {
+                     if (!async_wait_logged_)
+                     {
+                         async_wait_logged_ = true;
+                         Log("Waiting for asynchronous operation to complete.");
+                     }
+                     WaitForAnyAsyncOperationsToComplete();
+                 }
              }
          });
 }

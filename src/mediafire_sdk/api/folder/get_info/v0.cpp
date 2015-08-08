@@ -40,7 +40,7 @@ namespace {
 using namespace v0;  // NOLINT
 bool PermissionsFromPropertyBranch(
         Response * response,
-        Response::Permissions * value,
+        ResponseData::Permissions * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -198,15 +198,20 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->created_datetime = boost::posix_time::not_a_date_time;
-    response->deleted_datetime = boost::posix_time::not_a_date_time;
-    response->shared_by_user = SharedByUser::Unshared;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->created_datetime = boost::posix_time::not_a_date_time;
+    response_data_ptr->deleted_datetime = boost::posix_time::not_a_date_time;
+    response_data_ptr->shared_by_user = SharedByUser::Unshared;
 
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.folder_info.folderkey",
-            &response->folderkey ) )
+            &response_data_ptr->folderkey ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.folder_info.folderkey\"");
@@ -215,7 +220,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.folder_info.name",
-            &response->name ) )
+            &response_data_ptr->name ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.folder_info.name\"");
@@ -228,7 +233,7 @@ void Impl::ParseResponse( Response * response )
                 "response.folder_info.description",
                 &optarg) )
         {
-            response->description = optarg;
+            response_data_ptr->description = optarg;
         }
     }
 
@@ -236,13 +241,13 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.folder_info.created",
-            &response->created_datetime);
+            &response_data_ptr->created_datetime);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.folder_info.delete_date",
-            &response->deleted_datetime);
+            &response_data_ptr->deleted_datetime);
 
     // create_content_parse_single optional no default
     {
@@ -252,7 +257,7 @@ void Impl::ParseResponse( Response * response )
                 "response.folder_info.parent_folderkey",
                 &optarg) )
         {
-            response->parent_folderkey = optarg;
+            response_data_ptr->parent_folderkey = optarg;
         }
     }
 
@@ -264,7 +269,7 @@ void Impl::ParseResponse( Response * response )
                 "response.folder_info.custom_url",
                 &optarg) )
         {
-            response->custom_url = optarg;
+            response_data_ptr->custom_url = optarg;
         }
     }
 
@@ -277,9 +282,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->filedrop = FileDrop::Disabled;
+                response_data_ptr->filedrop = FileDrop::Disabled;
             else if ( optval == "yes" )
-                response->filedrop = FileDrop::Enabled;
+                response_data_ptr->filedrop = FileDrop::Enabled;
         }
     }
 
@@ -287,7 +292,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.folder_info.file_count",
-            &response->file_count ) )
+            &response_data_ptr->file_count ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.folder_info.file_count\"");
@@ -296,7 +301,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.folder_info.folder_count",
-            &response->folder_count ) )
+            &response_data_ptr->folder_count ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.folder_info.folder_count\"");
@@ -309,7 +314,7 @@ void Impl::ParseResponse( Response * response )
                 "response.folder_info.size",
                 &optarg) )
         {
-            response->size = optarg;
+            response_data_ptr->size = optarg;
         }
     }
 
@@ -321,7 +326,7 @@ void Impl::ParseResponse( Response * response )
                 "response.folder_info.total_folders",
                 &optarg) )
         {
-            response->total_folders = optarg;
+            response_data_ptr->total_folders = optarg;
         }
     }
 
@@ -333,7 +338,7 @@ void Impl::ParseResponse( Response * response )
                 "response.folder_info.total_files",
                 &optarg) )
         {
-            response->total_files = optarg;
+            response_data_ptr->total_files = optarg;
         }
     }
 
@@ -345,7 +350,7 @@ void Impl::ParseResponse( Response * response )
                 "response.folder_info.total_size",
                 &optarg) )
         {
-            response->total_size = optarg;
+            response_data_ptr->total_size = optarg;
         }
     }
 
@@ -358,9 +363,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "" )
-                response->shared_by_user = SharedByUser::Unshared;
+                response_data_ptr->shared_by_user = SharedByUser::Unshared;
             else if ( optval == "1" )
-                response->shared_by_user = SharedByUser::Shared;
+                response_data_ptr->shared_by_user = SharedByUser::Shared;
         }
     }
 
@@ -369,11 +374,11 @@ void Impl::ParseResponse( Response * response )
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"permissions");
 
-        Response::Permissions optarg;
+        ResponseData::Permissions optarg;
         if ( PermissionsFromPropertyBranch(
                 response, &optarg, branch) )
         {
-            response->permissions = std::move(optarg);
+            response_data_ptr->permissions = std::move(optarg);
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
@@ -389,7 +394,7 @@ void Impl::ParseResponse( Response * response )
                 "response.folder_info.owner_name",
                 &optarg) )
         {
-            response->owner_name = optarg;
+            response_data_ptr->owner_name = optarg;
         }
     }
 
@@ -401,7 +406,7 @@ void Impl::ParseResponse( Response * response )
                 "response.folder_info.avatar",
                 &optarg) )
         {
-            response->avatar = optarg;
+            response_data_ptr->avatar = optarg;
         }
     }
 
@@ -409,7 +414,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.folder_info.flag",
-            &response->flag ) )
+            &response_data_ptr->flag ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.folder_info.flag\"");
@@ -418,10 +423,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.folder_info.revision",
-            &response->revision ) )
+            &response_data_ptr->revision ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.folder_info.revision\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

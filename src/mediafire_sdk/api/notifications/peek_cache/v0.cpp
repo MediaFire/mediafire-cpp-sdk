@@ -74,11 +74,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.num_total",
-            &response->total ) )
+            &response_data_ptr->total ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.num_total\"");
@@ -87,7 +92,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.num_unread",
-            &response->unread ) )
+            &response_data_ptr->unread ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.num_unread\"");
@@ -96,10 +101,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.last_timestamp",
-            &response->last_timestamp ) )
+            &response_data_ptr->last_timestamp ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.last_timestamp\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

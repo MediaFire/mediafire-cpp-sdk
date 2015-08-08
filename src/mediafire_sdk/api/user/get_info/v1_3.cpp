@@ -27,7 +27,7 @@ namespace {
 using namespace v1_3;  // NOLINT
 bool FacebookFromPropertyBranch(
         Response * response,
-        Response::Facebook * value,
+        ResponseData::Facebook * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -185,7 +185,7 @@ bool FacebookFromPropertyBranch(
 using namespace v1_3;  // NOLINT
 bool TwitterFromPropertyBranch(
         Response * response,
-        Response::Twitter * value,
+        ResponseData::Twitter * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -283,7 +283,7 @@ bool TwitterFromPropertyBranch(
 using namespace v1_3;  // NOLINT
 bool GmailFromPropertyBranch(
         Response * response,
-        Response::Gmail * value,
+        ResponseData::Gmail * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -478,17 +478,22 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->first_name = "";
-    response->last_name = "";
-    response->gender = Gender::Unknown;
-    response->birth_date = boost::posix_time::not_a_date_time;
-    response->created_datetime = boost::posix_time::not_a_date_time;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->first_name = "";
+    response_data_ptr->last_name = "";
+    response_data_ptr->gender = Gender::Unknown;
+    response_data_ptr->birth_date = boost::posix_time::not_a_date_time;
+    response_data_ptr->created_datetime = boost::posix_time::not_a_date_time;
 
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.ekey",
-            &response->ekey ) )
+            &response_data_ptr->ekey ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.ekey\"");
@@ -497,7 +502,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.email",
-            &response->email ) )
+            &response_data_ptr->email ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.email\"");
@@ -506,19 +511,19 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.user_info.first_name",
-            &response->first_name);
+            &response_data_ptr->first_name);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.user_info.last_name",
-            &response->last_name);
+            &response_data_ptr->last_name);
 
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.display_name",
-            &response->display_name ) )
+            &response_data_ptr->display_name ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.display_name\"");
@@ -532,11 +537,11 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "unknown" )
-                response->gender = Gender::Unknown;
+                response_data_ptr->gender = Gender::Unknown;
             else if ( optval == "male" )
-                response->gender = Gender::Male;
+                response_data_ptr->gender = Gender::Male;
             else if ( optval == "female" )
-                response->gender = Gender::Female;
+                response_data_ptr->gender = Gender::Female;
         }
     }
 
@@ -544,7 +549,7 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.user_info.birth_date",
-            &response->birth_date);
+            &response_data_ptr->birth_date);
 
     // create_content_parse_single optional no default
     {
@@ -554,7 +559,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.location",
                 &optarg) )
         {
-            response->location = optarg;
+            response_data_ptr->location = optarg;
         }
     }
 
@@ -566,7 +571,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.website",
                 &optarg) )
         {
-            response->website = optarg;
+            response_data_ptr->website = optarg;
         }
     }
 
@@ -579,9 +584,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->account_type = AccountType::Basic;
+                response_data_ptr->account_type = AccountType::Basic;
             else if ( optval == "yes" )
-                response->account_type = AccountType::Premium;
+                response_data_ptr->account_type = AccountType::Premium;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -597,7 +602,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.bandwidth",
-            &response->bandwidth ) )
+            &response_data_ptr->bandwidth ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.bandwidth\"");
@@ -606,7 +611,7 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.user_info.created",
-            &response->created_datetime);
+            &response_data_ptr->created_datetime);
 
     {
         std::string optval;
@@ -617,9 +622,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->validated = Validated::NotValidated;
+                response_data_ptr->validated = Validated::NotValidated;
             else if ( optval == "yes" )
-                response->validated = Validated::Validated;
+                response_data_ptr->validated = Validated::Validated;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -639,7 +644,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.tos_accepted",
                 &optarg) )
         {
-            response->tos_accepted = optarg;
+            response_data_ptr->tos_accepted = optarg;
         }
     }
 
@@ -647,7 +652,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.used_storage_size",
-            &response->used_storage_size ) )
+            &response_data_ptr->used_storage_size ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.used_storage_size\"");
@@ -656,7 +661,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.base_storage",
-            &response->base_storage ) )
+            &response_data_ptr->base_storage ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.base_storage\"");
@@ -665,7 +670,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.bonus_storage",
-            &response->bonus_storage ) )
+            &response_data_ptr->bonus_storage ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.bonus_storage\"");
@@ -674,7 +679,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.storage_limit",
-            &response->storage_limit ) )
+            &response_data_ptr->storage_limit ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.storage_limit\"");
@@ -688,9 +693,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->storage_limit_exceeded = LimitExceeded::WithinBounds;
+                response_data_ptr->storage_limit_exceeded = LimitExceeded::WithinBounds;
             else if ( optval == "yes" )
-                response->storage_limit_exceeded = LimitExceeded::Exceeded;
+                response_data_ptr->storage_limit_exceeded = LimitExceeded::Exceeded;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -706,7 +711,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.options",
-            &response->options ) )
+            &response_data_ptr->options ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.options\"");
@@ -716,11 +721,11 @@ void Impl::ParseResponse( Response * response )
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.user_info.facebook");
 
-        Response::Facebook optarg;
+        ResponseData::Facebook optarg;
         if ( FacebookFromPropertyBranch(
                 response, &optarg, branch) )
         {
-            response->facebook = std::move(optarg);
+            response_data_ptr->facebook = std::move(optarg);
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
@@ -733,11 +738,11 @@ void Impl::ParseResponse( Response * response )
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.user_info.twitter");
 
-        Response::Twitter optarg;
+        ResponseData::Twitter optarg;
         if ( TwitterFromPropertyBranch(
                 response, &optarg, branch) )
         {
-            response->twitter = std::move(optarg);
+            response_data_ptr->twitter = std::move(optarg);
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
@@ -750,17 +755,20 @@ void Impl::ParseResponse( Response * response )
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.user_info.gmail");
 
-        Response::Gmail optarg;
+        ResponseData::Gmail optarg;
         if ( GmailFromPropertyBranch(
                 response, &optarg, branch) )
         {
-            response->gmail = std::move(optarg);
+            response_data_ptr->gmail = std::move(optarg);
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
     {
         // Is optional
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

@@ -22,9 +22,11 @@ public:
             = TDeviceGetForeignResourcesRequest;
     using DeviceGetForeignResourcesResponseType =
             typename DeviceGetForeignResourcesRequestType::ResponseType;
+    using DeviceGetForeignResourcesResponseDataType =
+            typename DeviceGetForeignResourcesRequestType::ResponseDataType;
 
-    using File = typename DeviceGetForeignResourcesResponseType::File;
-    using Folder = typename DeviceGetForeignResourcesResponseType::Folder;
+    using File = typename DeviceGetForeignResourcesResponseDataType::File;
+    using Folder = typename DeviceGetForeignResourcesResponseDataType::Folder;
 
     // The struct for the errors we might return
     struct ErrorType

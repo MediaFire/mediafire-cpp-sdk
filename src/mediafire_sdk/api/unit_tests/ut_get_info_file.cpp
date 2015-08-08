@@ -41,25 +41,29 @@ BOOST_AUTO_TEST_CASE(UTGetInfoFile)
     using RequestType = GetInfoFileType::RequestType;
     using ResponseType = GetInfoFileType::ResponseType;
 
-    GetInfoFileType::CallbackType HandleGetInfoFile =
-            [this, &io_service](const ResponseType & response,
-                                const std::vector<GetInfoFileType::ErrorType> &
-                                        errors)
+    GetInfoFileType::CallbackType HandleGetInfoFile = [this, &io_service](
+            const ResponseType & response,
+            const std::vector<GetInfoFileType::ErrorType> & errors)
     {
         if (!errors.empty())
         {
             BOOST_FAIL("HandleGetInfoFile reported errors!");
         }
+        else if (!response.response_data)
+        {
+            BOOST_FAIL("HandleGetInfoFile missing response_data!");
+        }
         else
         {
-            std::cout << response.quickkey << std::endl;
+            std::cout << response.response_data->quickkey << std::endl;
         }
 
         io_service.stop();
     };
 
-    auto get_folder_info
-            = GetInfoFileType::Create(&stm, "", std::move(HandleGetInfoFile)); // TODO: Add a default quickkey
+    auto get_folder_info = GetInfoFileType::Create(
+            &stm, "",
+            std::move(HandleGetInfoFile));  // TODO: Add a default quickkey
 
     get_folder_info->Start();
 

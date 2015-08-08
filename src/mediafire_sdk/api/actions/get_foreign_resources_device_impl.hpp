@@ -53,15 +53,17 @@ void GetForeignResourcesDevice<TDeviceGetForeignResourcesRequest>::
     auto HandleDeviceGetForeignResources =
             [this, self](const DeviceGetForeignResourcesResponseType & response)
     {
-        if (response.error_code)
+        if (!response.response_data)
         {
             errors_.push_back(
                     ErrorType(response.error_code, response.error_string));
         }
         else
         {
-            files_ = response.files;
-            folders_ = response.folders;
+            const auto & data = *response.response_data;
+
+            files_ = data.files;
+            folders_ = data.folders;
         }
 
         request_ = nullptr;  // Must free request_ or coroutine cannot be

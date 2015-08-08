@@ -75,11 +75,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_array TArray
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.quickkeys");
-        response->quickkeys.reserve( branch.size() );
+        response_data_ptr->quickkeys.reserve( branch.size() );
         for ( auto & it : branch )
         {
             std::string result;
@@ -87,7 +92,7 @@ void Impl::ParseResponse( Response * response )
                     it.second,
                     &result ) )
             {
-                response->quickkeys.push_back(result);
+                response_data_ptr->quickkeys.push_back(result);
             }
             else
             {
@@ -99,6 +104,9 @@ void Impl::ParseResponse( Response * response )
     {
         // The value is optional.
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

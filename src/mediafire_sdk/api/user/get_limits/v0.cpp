@@ -74,11 +74,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.storage_base",
-            &response->storage_base ) )
+            &response_data_ptr->storage_base ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.storage_base\"");
@@ -87,7 +92,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.storage_bonus",
-            &response->storage_bonus ) )
+            &response_data_ptr->storage_bonus ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.storage_bonus\"");
@@ -96,7 +101,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.storage_limit",
-            &response->storage_limit ) )
+            &response_data_ptr->storage_limit ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.storage_limit\"");
@@ -105,7 +110,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.storage_used",
-            &response->storage_used ) )
+            &response_data_ptr->storage_used ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.storage_used\"");
@@ -114,7 +119,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.bandwidth_limit",
-            &response->bandwidth_limit ) )
+            &response_data_ptr->bandwidth_limit ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.bandwidth_limit\"");
@@ -123,7 +128,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.bandwidth_used",
-            &response->bandwidth_used ) )
+            &response_data_ptr->bandwidth_used ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.bandwidth_used\"");
@@ -132,7 +137,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.collaboration_limit",
-            &response->collaboration_limit ) )
+            &response_data_ptr->collaboration_limit ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.collaboration_limit\"");
@@ -141,7 +146,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.collaboration_today",
-            &response->collaboration_today ) )
+            &response_data_ptr->collaboration_today ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.collaboration_today\"");
@@ -150,7 +155,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.one_time_downloads_limit",
-            &response->one_time_downloads_limit ) )
+            &response_data_ptr->one_time_downloads_limit ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.one_time_downloads_limit\"");
@@ -159,7 +164,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.one_time_downloads_today",
-            &response->one_time_downloads_today ) )
+            &response_data_ptr->one_time_downloads_today ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.one_time_downloads_today\"");
@@ -168,7 +173,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.streaming_bandwidth_limit",
-            &response->streaming_bandwidth_limit ) )
+            &response_data_ptr->streaming_bandwidth_limit ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.streaming_bandwidth_limit\"");
@@ -177,7 +182,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.streaming_bandwidth_today",
-            &response->streaming_bandwidth_today ) )
+            &response_data_ptr->streaming_bandwidth_today ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.streaming_bandwidth_today\"");
@@ -186,10 +191,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.upload_size_limit",
-            &response->upload_size_limit ) )
+            &response_data_ptr->upload_size_limit ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.upload_size_limit\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

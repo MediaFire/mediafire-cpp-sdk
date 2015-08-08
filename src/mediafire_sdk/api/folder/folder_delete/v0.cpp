@@ -79,7 +79,12 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->asynchronous = Asynchronous::Synchronous;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->asynchronous = Asynchronous::Synchronous;
 
     {
         std::string optval;
@@ -90,9 +95,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->asynchronous = Asynchronous::Synchronous;
+                response_data_ptr->asynchronous = Asynchronous::Synchronous;
             else if ( optval == "yes" )
-                response->asynchronous = Asynchronous::Asynchronous;
+                response_data_ptr->asynchronous = Asynchronous::Asynchronous;
         }
     }
 
@@ -100,10 +105,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.device_revision",
-            &response->device_revision ) )
+            &response_data_ptr->device_revision ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.device_revision\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

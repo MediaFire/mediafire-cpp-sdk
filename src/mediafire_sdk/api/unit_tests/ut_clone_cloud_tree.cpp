@@ -43,9 +43,9 @@ BOOST_AUTO_TEST_CASE(UTGetContentFiles)
     stm.SetLoginCredentials(api::credentials::Email{username, password});
 
     using RequestType = mf::api::folder::get_content::Request;
-    using ResponseType = RequestType::ResponseType;
-    using ResponseTypeFiles = std::vector<ResponseType::File>;
-    using ResponseTypeFolders = std::vector<ResponseType::Folder>;
+    using ResponseDataType = RequestType::ResponseDataType;
+    using ResponseTypeFiles = std::vector<ResponseDataType::File>;
+    using ResponseTypeFolders = std::vector<ResponseDataType::Folder>;
 
     using GetFolderContentType = mf::api::GetFolderContents<RequestType>;
 
@@ -64,8 +64,7 @@ BOOST_AUTO_TEST_CASE(UTGetContentFiles)
     };
 
     auto get_folder_contents = GetFolderContentType::Create(
-            &stm,
-            root_folderkey,
+            &stm, root_folderkey,
             GetFolderContentType::FilesOrFoldersOrBoth::Files,
             std::move(HandleGetFolderContents));
     get_folder_contents->Start();
@@ -84,9 +83,9 @@ BOOST_AUTO_TEST_CASE(UTGetContentFolders)
     stm.SetLoginCredentials(api::credentials::Email{username, password});
 
     using RequestType = mf::api::folder::get_content::Request;
-    using ResponseType = RequestType::ResponseType;
-    using ResponseTypeFiles = std::vector<ResponseType::File>;
-    using ResponseTypeFolders = std::vector<ResponseType::Folder>;
+    using ResponseDataType = RequestType::ResponseDataType;
+    using ResponseTypeFiles = std::vector<ResponseDataType::File>;
+    using ResponseTypeFolders = std::vector<ResponseDataType::Folder>;
 
     using GetFolderContentType = mf::api::GetFolderContents<RequestType>;
 
@@ -105,8 +104,7 @@ BOOST_AUTO_TEST_CASE(UTGetContentFolders)
     };
 
     auto get_folder_contents = GetFolderContentType::Create(
-            &stm,
-            root_folderkey,
+            &stm, root_folderkey,
             GetFolderContentType::FilesOrFoldersOrBoth::Folders,
             std::move(HandleGetFolderContents));
     get_folder_contents->Start();
@@ -125,9 +123,9 @@ BOOST_AUTO_TEST_CASE(UTGetContentFilesAndFolders)
     stm.SetLoginCredentials(api::credentials::Email{username, password});
 
     using RequestType = mf::api::folder::get_content::Request;
-    using ResponseType = RequestType::ResponseType;
-    using ResponseTypeFiles = std::vector<ResponseType::File>;
-    using ResponseTypeFolders = std::vector<ResponseType::Folder>;
+    using ResponseDataType = RequestType::ResponseDataType;
+    using ResponseTypeFiles = std::vector<ResponseDataType::File>;
+    using ResponseTypeFolders = std::vector<ResponseDataType::Folder>;
 
     using GetFolderContentType = mf::api::GetFolderContents<RequestType>;
 
@@ -144,8 +142,7 @@ BOOST_AUTO_TEST_CASE(UTGetContentFilesAndFolders)
     };
 
     auto get_folder_contents = GetFolderContentType::Create(
-            &stm,
-            root_folderkey,
+            &stm, root_folderkey,
             GetFolderContentType::FilesOrFoldersOrBoth::Both,
             std::move(HandleGetFolderContents));
     get_folder_contents->Start();
@@ -184,8 +181,9 @@ BOOST_AUTO_TEST_CASE(UTCloneCloudTree)
     // io_service.
     auto work_manager = mf::api::WorkManager::Create(&io_service);
 
-    auto clone_cloud_tree = CloneCloudTreeType::Create(
-            &stm, root_folderkey, work_manager, std::move(HandleCloneCloudTree));
+    auto clone_cloud_tree
+            = CloneCloudTreeType::Create(&stm, root_folderkey, work_manager,
+                                         std::move(HandleCloneCloudTree));
     clone_cloud_tree->Start();
 
     io_service.run();

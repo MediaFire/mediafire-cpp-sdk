@@ -86,11 +86,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.email",
-            &response->email ) )
+            &response_data_ptr->email ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.email\"");
@@ -99,7 +104,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.created",
-            &response->created_datetime ) )
+            &response_data_ptr->created_datetime ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.created\"");
@@ -108,7 +113,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.pkey",
-            &response->pkey ) )
+            &response_data_ptr->pkey ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.pkey\"");
@@ -121,9 +126,12 @@ void Impl::ParseResponse( Response * response )
                 "response.temp_pw",
                 &optarg) )
         {
-            response->temporary_password = optarg;
+            response_data_ptr->temporary_password = optarg;
         }
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

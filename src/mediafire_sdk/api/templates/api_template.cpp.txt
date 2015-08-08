@@ -61,6 +61,7 @@ void Impl::ParseResponse( Response * __PR_OPT_ADT__ )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
+
 __CONTENT_PARSING__
 
 #   undef return_error

@@ -26,14 +26,27 @@ namespace get_editable_media {
 namespace v0 {
 
 /**
+ * @class ResponseData
+ * @brief Response data from API request "system/get_editable_media"
+ *
+ * This data is only available if the API request was successful.
+ */
+class ResponseData
+{
+public:
+    /** API response field "response.editable.extensions" */
+    std::vector<std::string> editable_extensions;
+};
+
+/**
  * @class Response
  * @brief Response from API request "system/get_editable_media"
  */
 class Response : public ResponseBase
 {
 public:
-    /** API response field "response.editable.extensions" */
-    std::vector<std::string> editable_extensions;
+    /** Parsed API response on successful parse. */
+    boost::optional<ResponseData> response_data;
 };
 
 class Impl;
@@ -53,7 +66,10 @@ public:
     // Remaining functions are for use by API library only. --------------------
 
     /** Requester/SessionMaintainer expected type. */
-    typedef Response ResponseType;
+    using ResponseType = Response;
+
+    /** Requester/SessionMaintainer expected type. */
+    using ResponseDataType = ResponseData;
 
     /** Requester/SessionMaintainer expected type. */
     typedef std::function< void( const ResponseType & data)> CallbackType;

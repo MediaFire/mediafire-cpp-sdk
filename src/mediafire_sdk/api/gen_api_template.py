@@ -1299,11 +1299,17 @@ def create_data_type(indent_level, cpp_type, cpp_name, r, parse_data_type,
     return ret
 
 
+def has_content_to_return(api):
+    if 'return_params' not in api or len(api['return_params']) == 0:
+        return False
+    return True
+
+
 def get_pr_opt_adt(api):
     '''ParseResponse argument name "response". Prevents unused variable C++
     warnings.'''
 
-    if 'return_params' not in api or len(api['return_params']) == 0:
+    if has_content_to_return(api) == False:
         return '/* response */'
     return 'response'
 
@@ -1333,7 +1339,7 @@ def get_data_ctor(api):
     for (n, v) in args_with_defaults:
         initializers.append(n + '(' + v + ')')
 
-    return '''    Response() :
+    return '''    ResponseData() :
         ''' + ',\n        '.join(initializers) + '''
     {}
 '''
@@ -1391,7 +1397,7 @@ def get_data_type_struct_extractor(api, name, param_list):
     lines.append(I(0) + 'using namespace ' + version_str + ';  // NOLINT')
     lines.append(I(0) + 'bool ' + name + 'FromPropertyBranch(')
     lines.append(I(2) + 'Response * response,')
-    lines.append(I(2) + 'Response::' + name + ' * value,')
+    lines.append(I(2) + 'ResponseData::' + name + ' * value,')
     lines.append(I(2) + 'const boost::property_tree::wptree & pt')
     lines.append(I(1) + ')')
     lines.append(I(0) + '{')
@@ -1543,7 +1549,7 @@ def content_parse_branch(api, ob, pt, return_param_list):
                                                  pt))
 
         elif cpp_type in struct_names:
-            full_type_name = 'Response::' + cpp_type
+            full_type_name = 'ResponseData::' + cpp_type
             ret.append(
                 create_content_struct_parse(
                     api, ob, cpp_type, full_type_name, cpp_name, api_path,
@@ -1559,9 +1565,23 @@ def get_content_parsing(api):
 
     ret = ''
 
+    if has_content_to_return(api) == True:
+        ret = ret + """\
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+"""
+
     if 'return_params' in api:
-        ret = ret + content_parse_branch(api, 'response', 'response->pt',
+        ret = ret + content_parse_branch(api, 'response_data_ptr', 'response->pt',
                                          api['return_params'])
+
+    if has_content_to_return(api) == True:
+        ret = ret + """
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); """
 
     return ret
 

@@ -72,11 +72,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.limits.max_objects",
-            &response->max_objects ) )
+            &response_data_ptr->max_objects ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.limits.max_objects\"");
@@ -85,7 +90,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.limits.max_keys",
-            &response->max_keys ) )
+            &response_data_ptr->max_keys ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.limits.max_keys\"");
@@ -94,7 +99,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.limits.max_image_size",
-            &response->max_image_size ) )
+            &response_data_ptr->max_image_size ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.limits.max_image_size\"");
@@ -103,7 +108,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.limits.zip_max_filesize",
-            &response->zip_max_filesize ) )
+            &response_data_ptr->zip_max_filesize ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.limits.zip_max_filesize\"");
@@ -112,7 +117,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.limits.zip_max_total_filesize",
-            &response->zip_max_total_filesize ) )
+            &response_data_ptr->zip_max_total_filesize ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.limits.zip_max_total_filesize\"");
@@ -121,7 +126,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.limits.folder_content_chunk_size",
-            &response->folder_content_chunk_size ) )
+            &response_data_ptr->folder_content_chunk_size ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.limits.folder_content_chunk_size\"");
@@ -130,7 +135,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.limits.folder_depth_limit",
-            &response->folder_depth_limit ) )
+            &response_data_ptr->folder_depth_limit ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.limits.folder_depth_limit\"");
@@ -139,7 +144,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.limits.limit_search_results",
-            &response->limit_search_results ) )
+            &response_data_ptr->limit_search_results ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.limits.limit_search_results\"");
@@ -148,7 +153,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.limits.daily_shares_limit",
-            &response->daily_shares_limit ) )
+            &response_data_ptr->daily_shares_limit ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.limits.daily_shares_limit\"");
@@ -157,10 +162,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.limits.device_changes_list_limit",
-            &response->device_changes_list_limit ) )
+            &response_data_ptr->device_changes_list_limit ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.limits.device_changes_list_limit\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

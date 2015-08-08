@@ -73,17 +73,22 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->first_name = "";
-    response->last_name = "";
-    response->gender = Gender::Unknown;
-    response->birth_date = boost::posix_time::not_a_date_time;
-    response->created_datetime = boost::posix_time::not_a_date_time;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->first_name = "";
+    response_data_ptr->last_name = "";
+    response_data_ptr->gender = Gender::Unknown;
+    response_data_ptr->birth_date = boost::posix_time::not_a_date_time;
+    response_data_ptr->created_datetime = boost::posix_time::not_a_date_time;
 
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.ekey",
-            &response->ekey ) )
+            &response_data_ptr->ekey ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.ekey\"");
@@ -92,7 +97,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.email",
-            &response->email ) )
+            &response_data_ptr->email ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.email\"");
@@ -101,19 +106,19 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.user_info.first_name",
-            &response->first_name);
+            &response_data_ptr->first_name);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.user_info.last_name",
-            &response->last_name);
+            &response_data_ptr->last_name);
 
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.display_name",
-            &response->display_name ) )
+            &response_data_ptr->display_name ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.display_name\"");
@@ -127,11 +132,11 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "unknown" )
-                response->gender = Gender::Unknown;
+                response_data_ptr->gender = Gender::Unknown;
             else if ( optval == "male" )
-                response->gender = Gender::Male;
+                response_data_ptr->gender = Gender::Male;
             else if ( optval == "female" )
-                response->gender = Gender::Female;
+                response_data_ptr->gender = Gender::Female;
         }
     }
 
@@ -139,7 +144,7 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.user_info.birth_date",
-            &response->birth_date);
+            &response_data_ptr->birth_date);
 
     // create_content_parse_single optional no default
     {
@@ -149,7 +154,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.location",
                 &optarg) )
         {
-            response->location = optarg;
+            response_data_ptr->location = optarg;
         }
     }
 
@@ -161,7 +166,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.website",
                 &optarg) )
         {
-            response->website = optarg;
+            response_data_ptr->website = optarg;
         }
     }
 
@@ -174,9 +179,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "No" )
-                response->account_type = AccountType::Basic;
+                response_data_ptr->account_type = AccountType::Basic;
             else if ( optval == "Yes" )
-                response->account_type = AccountType::Premium;
+                response_data_ptr->account_type = AccountType::Premium;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -192,7 +197,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.bandwidth",
-            &response->bandwidth ) )
+            &response_data_ptr->bandwidth ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.bandwidth\"");
@@ -201,7 +206,7 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.user_info.created",
-            &response->created_datetime);
+            &response_data_ptr->created_datetime);
 
     {
         std::string optval;
@@ -212,9 +217,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "No" )
-                response->validated = Validated::NotValidated;
+                response_data_ptr->validated = Validated::NotValidated;
             else if ( optval == "Yes" )
-                response->validated = Validated::Validated;
+                response_data_ptr->validated = Validated::Validated;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -230,7 +235,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.max_upload_size",
-            &response->max_upload_size ) )
+            &response_data_ptr->max_upload_size ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.max_upload_size\"");
@@ -239,7 +244,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.max_instant_upload_size",
-            &response->max_instant_upload_size ) )
+            &response_data_ptr->max_instant_upload_size ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.max_instant_upload_size\"");
@@ -252,7 +257,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.tos_accepted",
                 &optarg) )
         {
-            response->tos_accepted = optarg;
+            response_data_ptr->tos_accepted = optarg;
         }
     }
 
@@ -260,7 +265,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.used_storage_size",
-            &response->used_storage_size ) )
+            &response_data_ptr->used_storage_size ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.used_storage_size\"");
@@ -269,7 +274,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.base_storage",
-            &response->base_storage ) )
+            &response_data_ptr->base_storage ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.base_storage\"");
@@ -278,7 +283,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.bonus_storage",
-            &response->bonus_storage ) )
+            &response_data_ptr->bonus_storage ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.bonus_storage\"");
@@ -287,7 +292,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.storage_limit",
-            &response->storage_limit ) )
+            &response_data_ptr->storage_limit ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.storage_limit\"");
@@ -301,9 +306,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->storage_limit_exceeded = LimitExceeded::WithinBounds;
+                response_data_ptr->storage_limit_exceeded = LimitExceeded::WithinBounds;
             else if ( optval == "yes" )
-                response->storage_limit_exceeded = LimitExceeded::Exceeded;
+                response_data_ptr->storage_limit_exceeded = LimitExceeded::Exceeded;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -319,7 +324,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.user_info.options",
-            &response->options ) )
+            &response_data_ptr->options ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.user_info.options\"");
@@ -332,7 +337,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.facebook.facebook_id",
                 &optarg) )
         {
-            response->facebook_id = optarg;
+            response_data_ptr->facebook_id = optarg;
         }
     }
 
@@ -344,7 +349,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.facebook.date_created",
                 &optarg) )
         {
-            response->facebook_date_created = optarg;
+            response_data_ptr->facebook_date_created = optarg;
         }
     }
 
@@ -356,7 +361,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.facebook.facebook_url",
                 &optarg) )
         {
-            response->facebook_url = optarg;
+            response_data_ptr->facebook_url = optarg;
         }
     }
 
@@ -368,7 +373,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.facebook.name",
                 &optarg) )
         {
-            response->facebook_name = optarg;
+            response_data_ptr->facebook_name = optarg;
         }
     }
 
@@ -380,7 +385,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.facebook.firstname",
                 &optarg) )
         {
-            response->facebook_firstname = optarg;
+            response_data_ptr->facebook_firstname = optarg;
         }
     }
 
@@ -392,7 +397,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.facebook.lastname",
                 &optarg) )
         {
-            response->facebook_lastname = optarg;
+            response_data_ptr->facebook_lastname = optarg;
         }
     }
 
@@ -404,7 +409,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.facebook.hometown",
                 &optarg) )
         {
-            response->facebook_hometown = optarg;
+            response_data_ptr->facebook_hometown = optarg;
         }
     }
 
@@ -416,7 +421,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.facebook.location",
                 &optarg) )
         {
-            response->facebook_location = optarg;
+            response_data_ptr->facebook_location = optarg;
         }
     }
 
@@ -428,7 +433,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.facebook.i18n",
                 &optarg) )
         {
-            response->facebook_i18n = optarg;
+            response_data_ptr->facebook_i18n = optarg;
         }
     }
 
@@ -440,7 +445,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.facebook.timezone",
                 &optarg) )
         {
-            response->facebook_timezone = optarg;
+            response_data_ptr->facebook_timezone = optarg;
         }
     }
 
@@ -453,9 +458,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->facebook_linked = FacebookLinked::Unlinked;
+                response_data_ptr->facebook_linked = FacebookLinked::Unlinked;
             else if ( optval == "yes" )
-                response->facebook_linked = FacebookLinked::Linked;
+                response_data_ptr->facebook_linked = FacebookLinked::Linked;
         }
     }
 
@@ -467,7 +472,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.twitter.twitter_id",
                 &optarg) )
         {
-            response->twitter_id = optarg;
+            response_data_ptr->twitter_id = optarg;
         }
     }
 
@@ -479,7 +484,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.twitter.date_created",
                 &optarg) )
         {
-            response->twitter_date_created = optarg;
+            response_data_ptr->twitter_date_created = optarg;
         }
     }
 
@@ -491,7 +496,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.twitter.screen_name",
                 &optarg) )
         {
-            response->twitter_screen_name = optarg;
+            response_data_ptr->twitter_screen_name = optarg;
         }
     }
 
@@ -503,7 +508,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.twitter.name",
                 &optarg) )
         {
-            response->twitter_name = optarg;
+            response_data_ptr->twitter_name = optarg;
         }
     }
 
@@ -515,7 +520,7 @@ void Impl::ParseResponse( Response * response )
                 "response.user_info.twitter.i18n",
                 &optarg) )
         {
-            response->twitter_i18n = optarg;
+            response_data_ptr->twitter_i18n = optarg;
         }
     }
 
@@ -528,11 +533,14 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->twitter_linked = TwitterLinked::Unlinked;
+                response_data_ptr->twitter_linked = TwitterLinked::Unlinked;
             else if ( optval == "yes" )
-                response->twitter_linked = TwitterLinked::Linked;
+                response_data_ptr->twitter_linked = TwitterLinked::Linked;
         }
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

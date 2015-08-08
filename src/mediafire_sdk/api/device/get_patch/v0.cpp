@@ -88,11 +88,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.patch_link",
-            &response->patch_link ) )
+            &response_data_ptr->patch_link ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.patch_link\"");
@@ -101,10 +106,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.patch_hash",
-            &response->patch_hash ) )
+            &response_data_ptr->patch_hash ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.patch_hash\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

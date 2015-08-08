@@ -73,13 +73,18 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->user_accepted_terms = TOSAccepted::No;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->user_accepted_terms = TOSAccepted::No;
 
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.terms_of_service.revision",
-            &response->revision ) )
+            &response_data_ptr->revision ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.terms_of_service.revision\"");
@@ -88,7 +93,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.terms_of_service.terms",
-            &response->terms ) )
+            &response_data_ptr->terms ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.terms_of_service.terms\"");
@@ -97,7 +102,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.terms_of_service.date",
-            &response->date ) )
+            &response_data_ptr->date ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.terms_of_service.date\"");
@@ -111,9 +116,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->user_accepted_terms = TOSAccepted::No;
+                response_data_ptr->user_accepted_terms = TOSAccepted::No;
             else if ( optval == "yes" )
-                response->user_accepted_terms = TOSAccepted::Yes;
+                response_data_ptr->user_accepted_terms = TOSAccepted::Yes;
         }
     }
 
@@ -121,10 +126,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.terms_of_service.acceptance_token",
-            &response->acceptance_token ) )
+            &response_data_ptr->acceptance_token ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.terms_of_service.acceptance_token\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

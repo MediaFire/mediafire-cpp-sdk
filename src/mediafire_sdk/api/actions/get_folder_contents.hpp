@@ -29,11 +29,12 @@ public:
     // Some convenience typedefs
     using RequestType = TRequest;
     using ResponseType = typename RequestType::ResponseType;
+    using ResponseDataType = typename RequestType::ResponseDataType;
 
     using ContentType = typename RequestType::ContentType;
 
-    using File = typename ResponseType::File;
-    using Folder = typename ResponseType::Folder;
+    using File = typename ResponseDataType::File;
+    using Folder = typename ResponseDataType::Folder;
 
     // The struct for the errors we might return
     struct ErrorType
@@ -52,8 +53,8 @@ public:
     };
 
     using CallbackType = std::function<void(
-            const std::vector<typename ResponseType::File> & files,
-            const std::vector<typename ResponseType::Folder> & folders,
+            const std::vector<typename ResponseDataType::File> & files,
+            const std::vector<typename ResponseDataType::Folder> & folders,
             const std::vector<ErrorType> & errors)>;
 
 public:
@@ -80,8 +81,10 @@ private:
                       const FilesOrFoldersOrBoth & files_or_folders_or_both,
                       CallbackType && callback);
 
-    void HandleFolderGetContentsFiles(const ResponseType & response);
-    void HandleFolderGetContentsFolders(const ResponseType & response);
+    void HandleFolderGetContentsFiles(const ResponseType & response,
+                                      uint32_t chunk_number);
+    void HandleFolderGetContentsFolders(const ResponseType & response,
+                                        uint32_t chunk_number);
 
     void CoroutineBody(pull_type & yield) override;
 

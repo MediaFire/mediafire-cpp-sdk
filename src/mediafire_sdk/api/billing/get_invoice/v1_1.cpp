@@ -27,7 +27,7 @@ namespace {
 using namespace v1_1;  // NOLINT
 bool ProductFromPropertyBranch(
         Response * response,
-        Response::Product * value,
+        ResponseData::Product * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -311,15 +311,20 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->recurring_startdate = boost::posix_time::not_a_date_time;
-    response->recurring_enddate = boost::posix_time::not_a_date_time;
-    response->next_bandwidth = boost::posix_time::not_a_date_time;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->recurring_startdate = boost::posix_time::not_a_date_time;
+    response_data_ptr->recurring_enddate = boost::posix_time::not_a_date_time;
+    response_data_ptr->next_bandwidth = boost::posix_time::not_a_date_time;
 
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.invoice_id",
-            &response->invoice_id ) )
+            &response_data_ptr->invoice_id ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.invoice_id\"");
@@ -328,7 +333,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.invoice_num",
-            &response->invoice_num ) )
+            &response_data_ptr->invoice_num ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.invoice_num\"");
@@ -337,7 +342,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.payment_method",
-            &response->payment_method ) )
+            &response_data_ptr->payment_method ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.payment_method\"");
@@ -346,7 +351,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.recurring_status",
-            &response->recurring_status ) )
+            &response_data_ptr->recurring_status ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.recurring_status\"");
@@ -355,7 +360,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.recurring_profile_id",
-            &response->recurring_profile_id ) )
+            &response_data_ptr->recurring_profile_id ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.recurring_profile_id\"");
@@ -364,7 +369,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.date_created",
-            &response->created_datetime ) )
+            &response_data_ptr->created_datetime ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.date_created\"");
@@ -377,7 +382,7 @@ void Impl::ParseResponse( Response * response )
                 "response.invoice.company_id",
                 &optarg) )
         {
-            response->company_id = optarg;
+            response_data_ptr->company_id = optarg;
         }
     }
 
@@ -385,7 +390,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.product_id",
-            &response->product_id ) )
+            &response_data_ptr->product_id ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.product_id\"");
@@ -394,7 +399,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.product_description",
-            &response->product_description ) )
+            &response_data_ptr->product_description ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.product_description\"");
@@ -403,7 +408,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.country",
-            &response->country ) )
+            &response_data_ptr->country ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.country\"");
@@ -412,7 +417,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.initial_amount",
-            &response->initial_amount ) )
+            &response_data_ptr->initial_amount ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.initial_amount\"");
@@ -421,7 +426,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.initial_tax",
-            &response->initial_tax ) )
+            &response_data_ptr->initial_tax ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.initial_tax\"");
@@ -430,7 +435,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.initial_total",
-            &response->initial_total ) )
+            &response_data_ptr->initial_total ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.initial_total\"");
@@ -439,7 +444,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.recurring_amount",
-            &response->recurring_amount ) )
+            &response_data_ptr->recurring_amount ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.recurring_amount\"");
@@ -448,7 +453,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.recurring_tax",
-            &response->recurring_tax ) )
+            &response_data_ptr->recurring_tax ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.recurring_tax\"");
@@ -457,7 +462,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.recurring_total",
-            &response->recurring_total ) )
+            &response_data_ptr->recurring_total ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.recurring_total\"");
@@ -466,19 +471,19 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.invoice.recurring_startdate",
-            &response->recurring_startdate);
+            &response_data_ptr->recurring_startdate);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.invoice.recurring_enddate",
-            &response->recurring_enddate);
+            &response_data_ptr->recurring_enddate);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.invoice.next_bandwidth",
-            &response->next_bandwidth);
+            &response_data_ptr->next_bandwidth);
 
     // create_content_parse_single optional no default
     {
@@ -488,7 +493,7 @@ void Impl::ParseResponse( Response * response )
                 "response.invoice.previous_invoice",
                 &optarg) )
         {
-            response->previous_invoice_id = optarg;
+            response_data_ptr->previous_invoice_id = optarg;
         }
     }
 
@@ -496,7 +501,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.invoice.promo_code",
-            &response->promo_code ) )
+            &response_data_ptr->promo_code ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.promo_code\"");
@@ -506,11 +511,11 @@ void Impl::ParseResponse( Response * response )
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.invoice.product");
 
-        Response::Product optarg;
+        ResponseData::Product optarg;
         if ( ProductFromPropertyBranch(
                 response, &optarg, branch) )
         {
-            response->product = std::move(optarg);
+            response_data_ptr->product = std::move(optarg);
         }
         else
         {
@@ -529,6 +534,9 @@ void Impl::ParseResponse( Response * response )
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.product\"");
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }
