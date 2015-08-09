@@ -73,6 +73,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL Windows)
             endforeach(flag_var)
         endif( USE_MSVC_STATIC_RUNTIME )
     endif()
+elseif(CMAKE_SYSTEM_NAME STREQUAL Linux)
+  cmake_minimum_required (VERSION 2.6)
+  find_package (Threads)
+  SET(PTHREAD_LIBRARY ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
 # Boost asio SSL depends on OpenSSL
