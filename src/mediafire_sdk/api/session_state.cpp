@@ -54,7 +54,7 @@ bool operator==(const Running & lhs, const Running & rhs)
 
     if (!l.response_data && !r.response_data)
     {
-        return true;
+        return l.pkey == r.pkey;
     }
     else if (!l.response_data)
     {

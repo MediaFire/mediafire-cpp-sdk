@@ -446,7 +446,7 @@ void SessionMaintainer::HandleSessionTokenResponse(
 
                     // If the pkey was sent, then the password may have been
                     // changed.  Let the class user figure this out if so.
-                    if (!response.pkey)
+                    if (response.pkey)
                         new_state.pkey = *response.pkey;
 
                     // This async call used the same credentials we currently
