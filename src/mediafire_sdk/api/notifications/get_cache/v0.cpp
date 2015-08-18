@@ -189,7 +189,7 @@ void Impl::ParseResponse( Response * response )
             "missing \"response.num_older\"");
 
     // Only on success, return parsed data structure with response
-    response->response_data = std::move(response_data); 
+    response->response_data = std::move(response_data);
 
 #   undef return_error
 }
