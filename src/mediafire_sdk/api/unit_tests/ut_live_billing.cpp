@@ -7,7 +7,7 @@
 #include "ut_live.hpp"
 
 #ifndef OUTPUT_DEBUG
-#  define OUTPUT_DEBUG
+#define OUTPUT_DEBUG
 #endif
 
 #include "mediafire_sdk/api/billing/get_products.hpp"
@@ -23,61 +23,62 @@
 
 namespace api = mf::api;
 
-BOOST_FIXTURE_TEST_SUITE( s, ut::Fixture )
+BOOST_FIXTURE_TEST_SUITE(s, ut::Fixture)
 
 BOOST_AUTO_TEST_CASE(GetBillingProducts)
 {
     api::billing::get_products::Request request;
     request.SetActive(api::billing::get_products::Activity::Active);
 
-    Call(
-        request,
-        [&](const api::billing::get_products::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                Success();
+    Call(request, [&](const api::billing::get_products::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
 
-                BOOST_CHECK( ! response.products.empty() );
+                 Success();
 
-                for ( const api::billing::get_products::Response::Product & it
-                    : response.products )
-                {
-                    BOOST_CHECK( ! it.description.empty() );
-                }
-            }
-        });
+                 BOOST_CHECK(!data.products.empty());
+
+                 for (const api::billing::get_products::ResponseData::Product &
+                              it : data.products)
+                 {
+                     BOOST_CHECK(!it.description.empty());
+                 }
+             }
+         });
 
     StartWithDefaultTimeout();
 }
 
 BOOST_AUTO_TEST_CASE(GetBillingPlans)
 {
-    Call(
-        api::billing::get_plans::Request(),
-        [&](const api::billing::get_plans::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                Success();
+    Call(api::billing::get_plans::Request(),
+         [&](const api::billing::get_plans::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
 
-                BOOST_CHECK( ! response.plans.empty() );
+                 Success();
 
-                for ( const api::billing::get_plans::Response::Plan & it
-                    : response.plans )
-                {
-                    BOOST_CHECK( ! it.description.empty() );
-                }
-            }
-        });
+                 BOOST_CHECK(!data.plans.empty());
+
+                 for (const api::billing::get_plans::ResponseData::Plan & it :
+                      data.plans)
+                 {
+                     BOOST_CHECK(!it.description.empty());
+                 }
+             }
+         });
 
     StartWithDefaultTimeout();
 }

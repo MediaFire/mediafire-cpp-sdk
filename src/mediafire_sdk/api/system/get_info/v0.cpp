@@ -27,7 +27,7 @@ namespace {
 using namespace v0;  // NOLINT
 bool ImageSizeFromPropertyBranch(
         Response * response,
-        Response::ImageSize * value,
+        ResponseData::ImageSize * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -77,7 +77,7 @@ bool ImageSizeFromPropertyBranch(
 using namespace v0;  // NOLINT
 bool TermsOfServiceFromPropertyBranch(
         Response * response,
-        Response::TermsOfService * value,
+        ResponseData::TermsOfService * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -175,11 +175,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.current_api_version",
-            &response->current_api_version ) )
+            &response_data_ptr->current_api_version ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.current_api_version\"");
@@ -188,7 +193,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.timezone",
-            &response->timezone ) )
+            &response_data_ptr->timezone ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.timezone\"");
@@ -197,7 +202,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.timezone_offset",
-            &response->timezone_offset ) )
+            &response_data_ptr->timezone_offset ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.timezone_offset\"");
@@ -206,7 +211,7 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.viewable.extensions");
-        response->viewable_extensions.reserve( branch.size() );
+        response_data_ptr->viewable_extensions.reserve( branch.size() );
         if (branch.empty())
         {
             return_error(
@@ -220,7 +225,7 @@ void Impl::ParseResponse( Response * response )
                     it.second,
                     &result ) )
             {
-                response->viewable_extensions.push_back(result);
+                response_data_ptr->viewable_extensions.push_back(result);
             }
             else
             {
@@ -243,7 +248,7 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.editable.extensions");
-        response->editable_extensions.reserve( branch.size() );
+        response_data_ptr->editable_extensions.reserve( branch.size() );
         if (branch.empty())
         {
             return_error(
@@ -257,7 +262,7 @@ void Impl::ParseResponse( Response * response )
                     it.second,
                     &result ) )
             {
-                response->editable_extensions.push_back(result);
+                response_data_ptr->editable_extensions.push_back(result);
             }
             else
             {
@@ -280,14 +285,14 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.image_sizes");
-        response->image_sizes.reserve( response->pt.size() );
+        response_data_ptr->image_sizes.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::ImageSize optarg;
+            ResponseData::ImageSize optarg;
             if ( ImageSizeFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->image_sizes.push_back(std::move(optarg));
+                response_data_ptr->image_sizes.push_back(std::move(optarg));
             else
                 return;  // error set already
         }
@@ -306,11 +311,11 @@ void Impl::ParseResponse( Response * response )
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.terms_of_service");
 
-        Response::TermsOfService optarg;
+        ResponseData::TermsOfService optarg;
         if ( TermsOfServiceFromPropertyBranch(
                 response, &optarg, branch) )
         {
-            response->terms_of_service = std::move(optarg);
+            response_data_ptr->terms_of_service = std::move(optarg);
         }
         else
         {
@@ -334,7 +339,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.max_keys",
-            &response->max_keys ) )
+            &response_data_ptr->max_keys ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.max_keys\"");
@@ -343,7 +348,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.max_objects",
-            &response->max_objects ) )
+            &response_data_ptr->max_objects ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.max_objects\"");
@@ -352,10 +357,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.max_image_size",
-            &response->max_image_size ) )
+            &response_data_ptr->max_image_size ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.max_image_size\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

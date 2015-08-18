@@ -111,14 +111,19 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->created_datetime = boost::posix_time::not_a_date_time;
-    response->previous_invoice_datetime = boost::posix_time::not_a_date_time;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->created_datetime = boost::posix_time::not_a_date_time;
+    response_data_ptr->previous_invoice_datetime = boost::posix_time::not_a_date_time;
 
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.invoice",
-            &response->invoice ) )
+            &response_data_ptr->invoice ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice\"");
@@ -127,13 +132,13 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "created",
-            &response->created_datetime);
+            &response_data_ptr->created_datetime);
 
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.total",
-            &response->total ) )
+            &response_data_ptr->total ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.total\"");
@@ -142,7 +147,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.product",
-            &response->product_id ) )
+            &response_data_ptr->product_id ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.product\"");
@@ -151,7 +156,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.premium",
-            &response->premium ) )
+            &response_data_ptr->premium ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.premium\"");
@@ -160,7 +165,10 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "lastpremium",
-            &response->previous_invoice_datetime);
+            &response_data_ptr->previous_invoice_datetime);
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

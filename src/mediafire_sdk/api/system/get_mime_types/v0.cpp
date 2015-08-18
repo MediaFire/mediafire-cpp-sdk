@@ -27,7 +27,7 @@ namespace {
 using namespace v0;  // NOLINT
 bool MimeTypeFromPropertyBranch(
         Response * response,
-        Response::MimeType * value,
+        ResponseData::MimeType * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -185,18 +185,23 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_struct_parse TArray
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.mime_types");
-        response->mimetypes.reserve( response->pt.size() );
+        response_data_ptr->mimetypes.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::MimeType optarg;
+            ResponseData::MimeType optarg;
             if ( MimeTypeFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->mimetypes.push_back(std::move(optarg));
+                response_data_ptr->mimetypes.push_back(std::move(optarg));
             else
                 return;  // error set already
         }
@@ -209,6 +214,9 @@ void Impl::ParseResponse( Response * response )
             mf::api::api_code::ContentInvalidData,
             "missing \"response.mime_types\"");
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

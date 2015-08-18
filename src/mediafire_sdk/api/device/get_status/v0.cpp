@@ -75,6 +75,11 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     {
         std::string optval;
         // create_content_enum_parse TSingle
@@ -84,9 +89,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->async_jobs_in_progress = AsyncJobs::Stopped;
+                response_data_ptr->async_jobs_in_progress = AsyncJobs::Stopped;
             else if ( optval == "yes" )
-                response->async_jobs_in_progress = AsyncJobs::Running;
+                response_data_ptr->async_jobs_in_progress = AsyncJobs::Running;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -102,10 +107,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.device_revision",
-            &response->device_revision ) )
+            &response_data_ptr->device_revision ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.device_revision\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

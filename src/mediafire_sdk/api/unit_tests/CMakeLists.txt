@@ -275,3 +275,21 @@ target_link_libraries(ut_get_foreign_resources_device
     mf_api_sdk
     ${Boost_LIBRARIES}
 )
+
+# --- ut_rename_file ------------------------
+add_executable(ut_rename_file
+    ut_rename_file.cpp)
+
+target_link_libraries(ut_rename_file
+    mf_api_sdk
+    ${Boost_LIBRARIES}
+)
+
+# --- ut_rename_folder ------------------------
+add_executable(ut_rename_folder
+    ut_rename_folder.cpp)
+
+target_link_libraries(ut_rename_folder
+    mf_api_sdk
+    ${Boost_LIBRARIES}
+)

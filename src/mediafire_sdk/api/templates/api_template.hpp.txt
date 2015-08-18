@@ -24,13 +24,26 @@ namespace __CPPSAFE_NAME__ {
 namespace __VERSION__ {
 __ENUMS__
 /**
+ * @class ResponseData
+ * @brief Response data from API request "__API_ACTION_PATH__"
+ *
+ * This data is only available if the API request was successful.
+ */
+class ResponseData
+{
+public:
+__DATA_TYPE_CTOR____DATA_TYPE_STRUCTS____DATA_TYPES__};
+
+/**
  * @class Response
  * @brief Response from API request "__API_ACTION_PATH__"
  */
 class Response : public ResponseBase
 {
 public:
-__DATA_TYPE_CTOR____DATA_TYPE_STRUCTS____DATA_TYPES__};
+    /** Parsed API response on successful parse. */
+    boost::optional<ResponseData> response_data;
+};
 
 class Impl;
 
@@ -46,7 +59,10 @@ __HPP_NAMESPACED_ENUMS____HPP_CTORS__
 __HPP_OPTIONAL_SETTERS__    // Remaining functions are for use by API library only. --------------------
 
     /** Requester/SessionMaintainer expected type. */
-    typedef Response ResponseType;
+    using ResponseType = Response;
+
+    /** Requester/SessionMaintainer expected type. */
+    using ResponseDataType = ResponseData;
 
     /** Requester/SessionMaintainer expected type. */
     typedef std::function< void( const ResponseType & data)> CallbackType;

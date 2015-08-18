@@ -91,6 +91,11 @@
             "cpp_type": "Privacy",
             "cpp_name": "privacy",
             "api_path": "response.privacy"
+        },
+        {
+            "cpp_type": "uint32_t",
+            "cpp_name": "revision",
+            "api_path": "response.revision"
         }
     ]
 }

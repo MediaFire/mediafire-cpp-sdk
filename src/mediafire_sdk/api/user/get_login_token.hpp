@@ -14,11 +14,29 @@
 #include "mediafire_sdk/api/response_base.hpp"
 #include "mediafire_sdk/api/credentials.hpp"
 
-namespace mf {
-namespace api {
-namespace user {
-namespace get_login_token {
-namespace v0 {
+namespace mf
+{
+namespace api
+{
+namespace user
+{
+namespace get_login_token
+{
+namespace v0
+{
+
+/**
+ * @class ResponseData
+ * @brief ResponseData from API request "user/get_login_token"
+ *
+ * This data is only available if the API request was successful.
+ */
+class ResponseData
+{
+public:
+    /** Token used to log into user's account. */
+    std::string login_token;
+};
 
 /**
  * @class Response
@@ -27,11 +45,11 @@ namespace v0 {
 class Response : public ResponseBase
 {
 public:
-    /** Token used to log into user's account. */
-    std::string login_token;
+    /** Parsed API response on successful parse. */
+    boost::optional<ResponseData> response_data;
 
-    /** Password hash used to determine if password has been modified. */
-    std::string pkey;
+    /** Unique password identifier.  Changes when password changes. */
+    boost::optional<std::string> pkey;
 };
 
 /**
@@ -44,13 +62,10 @@ public:
     typedef Response ResponseType;
 
     /** Callback type */
-    typedef std::function<
-        void(
-                const ResponseType & data
-            )> CallbackType;
+    typedef std::function<void(const ResponseType & data)> CallbackType;
 
     /** Requester/SessionMaintainer expected method. */
-    void SetCallback( CallbackType callback_function )
+    void SetCallback(CallbackType callback_function)
     {
         callback_ = callback_function;
     };
@@ -60,22 +75,20 @@ public:
      *
      * @param[in] credentials  API credentials for login token
      */
-    Request( const Credentials & credentials );
+    Request(const Credentials & credentials);
 
     /** Requester expected method. */
     std::string Url(std::string hostname) const;
 
     /** Requester expected method. */
-    void HandleContent(
-            const std::string & url,
-            const mf::http::Headers & headers,
-            const std::string & content);
+    void HandleContent(const std::string & url,
+                       const mf::http::Headers & headers,
+                       const std::string & content);
 
     /** Requester expected method. */
-    void HandleError(
-            const std::string & url,
-            std::error_code ec,
-            const std::string & error_string);
+    void HandleError(const std::string & url,
+                     std::error_code ec,
+                     const std::string & error_string);
 
 private:
     const Credentials credentials_;

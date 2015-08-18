@@ -48,8 +48,7 @@ BOOST_AUTO_TEST_CASE(UTPollForeignChanges)
 
     using PollForeignChangesType
             = mf::api::PollForeignChanges<DeviceGetForeignChangesType,
-                                          FolderGetInfoType,
-                                          FileGetInfoType>;
+                                          FolderGetInfoType, FileGetInfoType>;
 
     // Response types
     using File = typename PollForeignChangesType::File;
@@ -87,15 +86,32 @@ BOOST_AUTO_TEST_CASE(UTPollForeignChanges)
 
         for (const auto & updated_file_info : updated_files_info)
         {
-            std::cout << "Updated File Info: " << updated_file_info.quickkey
-                      << " " << updated_file_info.filename << std::endl;
+            if (updated_file_info.response_data)
+            {
+                const auto & data = *updated_file_info.response_data;
+                std::cout << "Updated File Info: " << data.quickkey << " "
+                          << data.filename << std::endl;
+            }
+            else
+            {
+                std::cout << "Updated File Info: Missing response data!"
+                          << std::endl;
+            }
         }
 
         for (const auto & updated_folder_info : updated_folders_info)
         {
-            std::cout << "Updated Folder Info: "
-                      << updated_folder_info.folderkey << " "
-                      << updated_folder_info.name << std::endl;
+            if (updated_folder_info.response_data)
+            {
+                const auto & data = *updated_folder_info.response_data;
+                std::cout << "Updated Folder Info: " << data.folderkey << " "
+                          << data.name << std::endl;
+            }
+            else
+            {
+                std::cout << "Updated Folder Info: Missing response data!"
+                          << std::endl;
+            }
         }
 
         for (const auto & deleted_file : deleted_files)
@@ -115,10 +131,7 @@ BOOST_AUTO_TEST_CASE(UTPollForeignChanges)
     auto work_manager = mf::api::WorkManager::Create(&io_service);
 
     auto poll_foreign_changes = PollForeignChangesType::Create(
-            &stm,
-            "t4j3iee",
-            0,
-            work_manager,
+            &stm, "t4j3iee", 0, work_manager,
             std::move(HandlePollForeignChanges));
 
     poll_foreign_changes->Start();

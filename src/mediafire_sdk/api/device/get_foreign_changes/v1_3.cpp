@@ -27,7 +27,7 @@ namespace {
 using namespace v1_3;  // NOLINT
 bool FileFromPropertyBranch(
         Response * response,
-        Response::File * value,
+        ResponseData::File * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -87,7 +87,7 @@ bool FileFromPropertyBranch(
 using namespace v1_3;  // NOLINT
 bool FolderFromPropertyBranch(
         Response * response,
-        Response::Folder * value,
+        ResponseData::Folder * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -207,11 +207,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.device_revision",
-            &response->device_revision ) )
+            &response_data_ptr->device_revision ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.device_revision\"");
@@ -220,7 +225,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.changes_list_block",
-            &response->changes_list_block ) )
+            &response_data_ptr->changes_list_block ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.changes_list_block\"");
@@ -229,14 +234,14 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.updated.files");
-        response->updated_files.reserve( response->pt.size() );
+        response_data_ptr->updated_files.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::File optarg;
+            ResponseData::File optarg;
             if ( FileFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->updated_files.push_back(std::move(optarg));
+                response_data_ptr->updated_files.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
@@ -248,14 +253,14 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.deleted.files");
-        response->deleted_files.reserve( response->pt.size() );
+        response_data_ptr->deleted_files.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::File optarg;
+            ResponseData::File optarg;
             if ( FileFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->deleted_files.push_back(std::move(optarg));
+                response_data_ptr->deleted_files.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
@@ -267,14 +272,14 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.updated.folders");
-        response->updated_folders.reserve( response->pt.size() );
+        response_data_ptr->updated_folders.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::Folder optarg;
+            ResponseData::Folder optarg;
             if ( FolderFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->updated_folders.push_back(std::move(optarg));
+                response_data_ptr->updated_folders.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
@@ -286,20 +291,23 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.deleted.folders");
-        response->deleted_folders.reserve( response->pt.size() );
+        response_data_ptr->deleted_folders.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::Folder optarg;
+            ResponseData::Folder optarg;
             if ( FolderFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->deleted_folders.push_back(std::move(optarg));
+                response_data_ptr->deleted_folders.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
     {
         // Is optional
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

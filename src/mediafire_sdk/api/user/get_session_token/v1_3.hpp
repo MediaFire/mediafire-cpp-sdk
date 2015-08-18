@@ -32,10 +32,12 @@ enum TokenVersion
 };
 
 /**
- * @class Response
- * @brief Response from API request "user/get_session_token"
+ * @class ResponseData
+ * @brief Response data from API request "user/get_session_token"
+ *
+ * This data is only available if the API request was successful.
  */
-class Response : public ResponseBase
+class ResponseData
 {
 public:
     // The rest must be set by implementer
@@ -44,11 +46,22 @@ public:
     /** Unique user identifier. Will never change. */
     std::string ekey;
 
-    /** Unique password identifier.  Changes when password changes. */
-    std::string pkey;
-
     std::string time;
     int secret_key;
+};
+
+/**
+ * @class Response
+ * @brief Response from API request "user/get_session_token"
+ */
+class Response : public ResponseBase
+{
+public:
+    /** Parsed API response on successful parse. */
+    boost::optional<ResponseData> response_data;
+
+    /** Unique password identifier.  Changes when password changes. */
+    boost::optional<std::string> pkey;
 };
 
 /**

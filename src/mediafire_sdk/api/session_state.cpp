@@ -52,11 +52,26 @@ bool operator==(const Running & lhs, const Running & rhs)
     const api::user::get_session_token::Response & r
             = rhs.session_token_response;
 
-    // Only the parts we care about determine if the session token response is
-    // different than another.
+    if (!l.response_data && !r.response_data)
+    {
+        return l.pkey == r.pkey;
+    }
+    else if (!l.response_data)
+    {
+        return false;
+    }
+    else if (!r.response_data)
+    {
+        return false;
+    }
+    else
+    {
+        // Only the parts we care about determine if the session token response
+        // is different than another.
 
-    return std::tie(l.session_token, l.pkey)
-           == std::tie(r.session_token, r.pkey);
+        return std::tie(l.response_data->session_token, l.pkey)
+               == std::tie(r.response_data->session_token, r.pkey);
+    }
 }
 
 }  // namespace session_state

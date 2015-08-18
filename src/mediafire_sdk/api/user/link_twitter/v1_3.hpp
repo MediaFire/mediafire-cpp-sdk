@@ -27,12 +27,25 @@ namespace link_twitter {
 namespace v1_3 {
 
 /**
+ * @class ResponseData
+ * @brief Response data from API request "user/link_twitter"
+ *
+ * This data is only available if the API request was successful.
+ */
+class ResponseData
+{
+public:
+};
+
+/**
  * @class Response
  * @brief Response from API request "user/link_twitter"
  */
 class Response : public ResponseBase
 {
 public:
+    /** Parsed API response on successful parse. */
+    boost::optional<ResponseData> response_data;
 };
 
 class Impl;
@@ -58,7 +71,10 @@ public:
     // Remaining functions are for use by API library only. --------------------
 
     /** Requester/SessionMaintainer expected type. */
-    typedef Response ResponseType;
+    using ResponseType = Response;
+
+    /** Requester/SessionMaintainer expected type. */
+    using ResponseDataType = ResponseData;
 
     /** Requester/SessionMaintainer expected type. */
     typedef std::function< void( const ResponseType & data)> CallbackType;

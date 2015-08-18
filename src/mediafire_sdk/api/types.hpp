@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "boost/optional/optional.hpp"
+
 namespace mf
 {
 namespace api
@@ -35,7 +37,7 @@ enum class RequestStarted
 struct SessionTokenData
 {
     std::string session_token;
-    std::string pkey;
+    boost::optional<std::string> pkey;
     std::string time;
     int secret_key;
 };

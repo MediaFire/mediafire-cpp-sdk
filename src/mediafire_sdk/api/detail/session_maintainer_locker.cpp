@@ -5,6 +5,8 @@
  */
 #include "session_maintainer_locker.hpp"
 
+#include "boost/variant/get.hpp"
+
 #include "mediafire_sdk/utils/variant_comparison.hpp"
 
 #ifdef OUTPUT_DEBUG
@@ -84,8 +86,11 @@ void SessionMaintainerLocker::SetCredentials(
 {
     mf::utils::unique_lock<mf::utils::mutex> lock(mutex_);
 
-    if ( ! credentials_ ||
-        ! mf::utils::AreVariantsEqual( credentials, *credentials_ ) )
+    bool credentials_did_change = ( !credentials_ ||
+        !mf::utils::AreVariantsEqual(credentials, *credentials_));
+    bool state_is_running =
+        boost::get<session_state::Running>(&session_state_) != nullptr;
+    if ( credentials_did_change || ! state_is_running )
     {
         credentials_ = credentials;
 

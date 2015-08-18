@@ -11,9 +11,9 @@
 #       include <windows.h>
 #       include <vector>
 #else
-#       include <codecvt>
 #       include <locale>
 #       include <string>
+#       include "boost/locale/encoding_utf.hpp"
 #endif
 
 #if defined(__MINGW32__)
@@ -125,6 +125,9 @@ std::wstring mf::utils::bytes_to_wide(const std::string & byte_string)
     return buffer;
 }
 #else
+
+using boost::locale::conv::utf_to_utf;
+
 uint64_t mf::utils::str_to_uint64(
         const std::string & str,
         int base
@@ -134,14 +137,12 @@ uint64_t mf::utils::str_to_uint64(
 }
 std::string mf::utils::wide_to_bytes(const std::wstring & str)
 {
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    return converter.to_bytes(str);
+    return utf_to_utf<char>(str.c_str(), str.c_str() + str.size());
 }
 
 std::wstring mf::utils::bytes_to_wide(const std::string & str)
 {
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    return converter.from_bytes(str);
+    return utf_to_utf<wchar_t>(str.c_str(), str.c_str() + str.size());
 }
 #endif
 

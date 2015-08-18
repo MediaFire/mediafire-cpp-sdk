@@ -104,13 +104,21 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->one_time_key_request_count = 0;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->one_time_key_request_count = 0;
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.one_time_key_request_count",
-            &response->one_time_key_request_count);
+            &response_data_ptr->one_time_key_request_count);
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

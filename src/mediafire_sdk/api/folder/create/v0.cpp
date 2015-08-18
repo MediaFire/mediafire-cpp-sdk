@@ -94,11 +94,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.folder_key",
-            &response->folderkey ) )
+            &response_data_ptr->folderkey ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.folder_key\"");
@@ -107,7 +112,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.upload_key",
-            &response->uploadkey ) )
+            &response_data_ptr->uploadkey ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.upload_key\"");
@@ -116,7 +121,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.name",
-            &response->name ) )
+            &response_data_ptr->name ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.name\"");
@@ -125,7 +130,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.created",
-            &response->created_datetime ) )
+            &response_data_ptr->created_datetime ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.created\"");
@@ -139,9 +144,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "public" )
-                response->privacy = Privacy::Public;
+                response_data_ptr->privacy = Privacy::Public;
             else if ( optval == "private" )
-                response->privacy = Privacy::Private;
+                response_data_ptr->privacy = Privacy::Private;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -152,6 +157,18 @@ void Impl::ParseResponse( Response * response )
                 mf::api::api_code::ContentInvalidData,
                 "no value in response.privacy");
     }
+
+    // create_content_parse_single required
+    if ( ! GetIfExists(
+            response->pt,
+            "response.revision",
+            &response_data_ptr->revision ) )
+        return_error(
+            mf::api::api_code::ContentInvalidData,
+            "missing \"response.revision\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

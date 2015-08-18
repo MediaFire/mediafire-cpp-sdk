@@ -21,20 +21,20 @@ class RacePreventer
 {
 public:
     RacePreventer(SocketWrapper * wrapper) :
-        value_(std::make_shared<bool>(false)),
+        first_taken_(std::make_shared<bool>(false)),
         ssl_socket_(wrapper->ssl_socket_),
         socket_(wrapper->socket_)
     {}
 
     bool IsFirst()
     {
-        auto orignal_value = *value_;
-        *value_ = true;
-        return ! orignal_value;
+        auto is_first = ! *first_taken_;
+        *first_taken_ = true;
+        return is_first;
     }
 
 private:
-    std::shared_ptr<bool> value_;
+    std::shared_ptr<bool> first_taken_;
 
     // SocketWrapper will release the socket on restart when a timeout occurs
     // and the async operation is cancelled.  Due to the asynchronous nature,

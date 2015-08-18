@@ -27,8 +27,11 @@ public:
     using DeviceGetChangesResponseType =
             typename DeviceGetChangesRequestType::ResponseType;
 
-    using File = typename DeviceGetChangesResponseType::File;
-    using Folder = typename DeviceGetChangesResponseType::Folder;
+    using DeviceGetChangesResponseDataType =
+            typename DeviceGetChangesRequestType::ResponseDataType;
+
+    using File = typename DeviceGetChangesResponseDataType::File;
+    using Folder = typename DeviceGetChangesResponseDataType::Folder;
 
     // The struct for the errors we might return
     struct DeviceGetStatusErrorType

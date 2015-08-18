@@ -97,6 +97,11 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single optional no default
     {
         std::string optarg;
@@ -105,7 +110,7 @@ void Impl::ParseResponse( Response * response )
                 "response.nextbilling",
                 &optarg) )
         {
-            response->next_billing = optarg;
+            response_data_ptr->next_billing = optarg;
         }
     }
 
@@ -118,9 +123,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->info_only = InfoOnly::No;
+                response_data_ptr->info_only = InfoOnly::No;
             else if ( optval == "yes" )
-                response->info_only = InfoOnly::Yes;
+                response_data_ptr->info_only = InfoOnly::Yes;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -136,7 +141,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.newpid",
-            &response->new_pid ) )
+            &response_data_ptr->new_pid ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.newpid\"");
@@ -145,7 +150,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.amount",
-            &response->amount ) )
+            &response_data_ptr->amount ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.amount\"");
@@ -154,10 +159,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.interval",
-            &response->interval ) )
+            &response_data_ptr->interval ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.interval\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

@@ -48,7 +48,7 @@ namespace {
 using namespace v0;  // NOLINT
 bool LinksFromPropertyBranch(
         Response * response,
-        Response::Links * value,
+        ResponseData::Links * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -280,21 +280,26 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->one_time_download_request_count = 0;
-    response->direct_download_free_bandwidth = 0;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->one_time_download_request_count = 0;
+    response_data_ptr->direct_download_free_bandwidth = 0;
 
     // create_content_struct_parse TArray
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.links");
-        response->links.reserve( response->pt.size() );
+        response_data_ptr->links.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::Links optarg;
+            ResponseData::Links optarg;
             if ( LinksFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->links.push_back(std::move(optarg));
+                response_data_ptr->links.push_back(std::move(optarg));
             else
                 return;  // error set already
         }
@@ -312,13 +317,16 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.one_time_download_request_count",
-            &response->one_time_download_request_count);
+            &response_data_ptr->one_time_download_request_count);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.direct_download_free_bandwidth",
-            &response->direct_download_free_bandwidth);
+            &response_data_ptr->direct_download_free_bandwidth);
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

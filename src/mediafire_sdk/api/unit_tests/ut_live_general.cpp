@@ -224,17 +224,19 @@ BOOST_AUTO_TEST_CASE(CreateFolder)
     Call(api::folder::create::Request(globals::test_folder_name),
          [&](const api::folder::create::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
-                 globals::test_folderkey = response.folderkey;
+                 globals::test_folderkey = response_data.folderkey;
 
-                 BOOST_CHECK(!response.folderkey.empty());
+                 BOOST_CHECK(!response_data.folderkey.empty());
              }
          });
 
@@ -250,17 +252,19 @@ BOOST_AUTO_TEST_CASE(CreateFolder2)
     Call(api::folder::create::Request(globals::test_folder_name2),
          [&](const api::folder::create::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
-                 globals::test_folderkey2 = response.folderkey;
+                 globals::test_folderkey2 = response_data.folderkey;
 
-                 BOOST_CHECK(!response.folderkey.empty());
+                 BOOST_CHECK(!response_data.folderkey.empty());
              }
          });
 
@@ -272,15 +276,17 @@ BOOST_AUTO_TEST_CASE(FolderGetInfo)
     Call(api::folder::get_info::Request(globals::test_folderkey),
          [&](const api::folder::get_info::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
-                 BOOST_CHECK(!response.folderkey.empty());
+                 BOOST_CHECK(!response_data.folderkey.empty());
              }
          });
 
@@ -301,13 +307,15 @@ BOOST_AUTO_TEST_CASE(CreateFile)
 
     Call(request, [&](const api::file::create::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
-                 if (!response.links.normal_download)
+                 const auto & response_data = *response.response_data;
+
+                 if (!response_data.links.normal_download)
                  {
                      Fail("Newly created file should have normal download "
                           "field for downloading file.");
@@ -317,10 +325,10 @@ BOOST_AUTO_TEST_CASE(CreateFile)
                      Success();
                  }
 
-                 globals::test_quickkey = response.quickkey;
+                 globals::test_quickkey = response_data.quickkey;
 
-                 BOOST_CHECK(!response.quickkey.empty());
-                 BOOST_CHECK(response.created_datetime
+                 BOOST_CHECK(!response_data.quickkey.empty());
+                 BOOST_CHECK(response_data.created_datetime
                              != boost::date_time::not_a_date_time);
              }
          });
@@ -336,19 +344,21 @@ BOOST_AUTO_TEST_CASE(CopyFile1)
 
     Call(request, [&](const api::file::copy::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
-                 globals::test_quickkey2 = response.quickkey;
+                 globals::test_quickkey2 = response_data.quickkey;
 
-                 Debug(response.quickkey);
+                 Debug(response_data.quickkey);
 
-                 BOOST_CHECK(!response.quickkey.empty());
+                 BOOST_CHECK(!response_data.quickkey.empty());
              }
          });
 
@@ -427,14 +437,16 @@ BOOST_AUTO_TEST_CASE(VerifyOneVersionExists)
 
     Call(request, [&](const api::file::get_versions::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  // There should be at least two versions.
-                 if (response.file_versions.size() != 1)
+                 if (response_data.file_versions.size() != 1)
                  {
                      Fail("There should be only one file version after "
                           "replacement upload.");
@@ -442,10 +454,10 @@ BOOST_AUTO_TEST_CASE(VerifyOneVersionExists)
                  else
                  {
                      Log("Got versions:");
-                     for (auto & version : response.file_versions)
+                     for (auto & version : response_data.file_versions)
                          Log(version.revision);
 
-                     if (response.file_versions[0].revision
+                     if (response_data.file_versions[0].revision
                          != globals::upload::upload_revision_1)
                      {
                          Fail("The revision received from the uploader does "
@@ -476,19 +488,21 @@ BOOST_AUTO_TEST_CASE(CopyFile2)
 
     Call(request, [&](const api::file::copy::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
-                 globals::test_quickkey2 = response.quickkey;
+                 globals::test_quickkey2 = response_data.quickkey;
 
-                 Debug(response.quickkey);
+                 Debug(response_data.quickkey);
 
-                 BOOST_CHECK(!response.quickkey.empty());
+                 BOOST_CHECK(!response_data.quickkey.empty());
              }
          });
 
@@ -617,14 +631,16 @@ BOOST_AUTO_TEST_CASE(VerifyNewVersionExists)
                    const bool timed_out = now > timeout;
                    bool had_success = false;
 
-                   if (response.error_code)
+                   if (!response.response_data)
                    {
                        Fail(response);
                    }
                    else
                    {
+                       const auto & response_data = *response.response_data;
+
                        // There should be at least two versions.
-                       if (response.file_versions.size() < 2)
+                       if (response_data.file_versions.size() < 2)
                        {
                            if (timed_out)
                            {
@@ -641,7 +657,8 @@ BOOST_AUTO_TEST_CASE(VerifyNewVersionExists)
                            bool original_revision_found = false;
                            bool new_revision_found = false;
 
-                           for (auto & version_info : response.file_versions)
+                           for (auto & version_info :
+                                response_data.file_versions)
                            {
                                if (version_info.revision
                                    == globals::upload::upload_revision_1)
@@ -717,7 +734,7 @@ BOOST_AUTO_TEST_CASE(RestoreFile)
 
     Call(request, [&](const api::file::restore::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
@@ -756,36 +773,43 @@ BOOST_AUTO_TEST_CASE(VerifyRestoreFile)
                  // 3. Revision is incremented
                  //    - Revisions must increment, otherwise device/get_changes
                  //      will not work properly.
-                 if (response.error_code)
+                 if (!response.response_data)
                  {
                      Fail(response);
                  }
-                 else if (response.hash != globals::upload::hash_1)
-                 {
-                     Log("First hash:", globals::upload::hash_1);
-                     Log("Second hash:", globals::upload::hash_2);
-                     Log("Hash after restoration:", response.hash);
-                     Log("Revisions. 1:", globals::upload::upload_revision_1,
-                         "2:", globals::upload::upload_revision_2, "Current:",
-                         response.revision);
-
-                     Fail("Hash on restored file incorrect!");
-                 }
-                 else if (response.revision
-                          <= globals::upload::upload_revision_2)
-                 {
-                     Log("First hash:", globals::upload::hash_1);
-                     Log("Second hash:", globals::upload::hash_2);
-                     Log("Hash after restoration:", response.hash);
-                     Log("Revisions. 1:", globals::upload::upload_revision_1,
-                         "2:", globals::upload::upload_revision_2, "Current:",
-                         response.revision);
-
-                     Fail("Revision on file not incremented!");
-                 }
                  else
                  {
-                     Success();
+                     const auto & response_data = *response.response_data;
+
+                     if (response_data.hash != globals::upload::hash_1)
+                     {
+                         Log("First hash:", globals::upload::hash_1);
+                         Log("Second hash:", globals::upload::hash_2);
+                         Log("Hash after restoration:", response_data.hash);
+                         Log("Revisions. 1:",
+                             globals::upload::upload_revision_1, "2:",
+                             globals::upload::upload_revision_2, "Current:",
+                             response_data.revision);
+
+                         Fail("Hash on restored file incorrect!");
+                     }
+                     else if (response_data.revision
+                              <= globals::upload::upload_revision_2)
+                     {
+                         Log("First hash:", globals::upload::hash_1);
+                         Log("Second hash:", globals::upload::hash_2);
+                         Log("Hash after restoration:", response_data.hash);
+                         Log("Revisions. 1:",
+                             globals::upload::upload_revision_1, "2:",
+                             globals::upload::upload_revision_2, "Current:",
+                             response_data.revision);
+
+                         Fail("Revision on file not incremented!");
+                     }
+                     else
+                     {
+                         Success();
+                     }
                  }
              });
 
@@ -810,14 +834,16 @@ BOOST_AUTO_TEST_CASE(GetFileVersions)
 
     Call(request, [&](const api::file::get_versions::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  // There should be at least one version.
-                 if (response.file_versions.size() > 0)
+                 if (response_data.file_versions.size() > 0)
                  {
                      Success();
                  }
@@ -843,14 +869,16 @@ BOOST_AUTO_TEST_CASE(RecentlyModified)
 
     Call(request, [&](const api::file::recently_modified::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  // There should be at least one version.
-                 if (response.quickkeys.size() > 0)
+                 if (response_data.quickkeys.size() > 0)
                  {
                      Success();
                  }
@@ -878,15 +906,17 @@ BOOST_AUTO_TEST_CASE(OneTimeKey)
 
     Call(request, [&](const api::file::one_time_key::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
-                 globals::one_time_key::download_token = response.token;
+                 const auto & response_data = *response.response_data;
+
+                 globals::one_time_key::download_token = response_data.token;
                  // There should be at least one version.
-                 if (response.download_link)
+                 if (response_data.download_link)
                  {
                      Success();
                  }
@@ -910,7 +940,7 @@ BOOST_AUTO_TEST_CASE(ConfigureOneTimeKey)
     Call(request,
          [&](const api::file::configure_one_time_key::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
@@ -928,15 +958,17 @@ BOOST_AUTO_TEST_CASE(FileGetInfo)
     Call(api::file::get_info::Request(globals::test_quickkey2),
          [&](const api::file::get_info::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
 #if 0  // Re-enable when #27247 is complete and we have upgraded to v1.3 of file/get_info
 
-                if (!response.links.normal_download)
+                if (!response_data.links.normal_download)
                 {
                     Fail("All files should return normal download field for "
                          "downloading file.");
@@ -947,11 +979,11 @@ BOOST_AUTO_TEST_CASE(FileGetInfo)
                      Success();
                  }
 
-                 globals::test_file_name2 = response.filename;
+                 globals::test_file_name2 = response_data.filename;
 
                  Debug(globals::test_file_name2);
 
-                 BOOST_CHECK(!response.quickkey.empty());
+                 BOOST_CHECK(!response_data.quickkey.empty());
              }
          });
 
@@ -965,7 +997,7 @@ BOOST_AUTO_TEST_CASE(FileMove)
 
     Call(request, [&](const api::file::move::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
                  Fail(response);
              else
                  Success();
@@ -984,7 +1016,7 @@ BOOST_AUTO_TEST_CASE(FileRename)
 
     Call(request, [&](const api::file::update::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
@@ -1006,7 +1038,7 @@ BOOST_AUTO_TEST_CASE(FileMakePrivate)
 
     Call(request, [&](const api::file::update::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
                  Fail(response);
              else
                  Success();
@@ -1020,15 +1052,17 @@ BOOST_AUTO_TEST_CASE(FileIsPrivate)
     Call(api::file::get_info::Request(globals::test_quickkey2),
          [&](const api::file::get_info::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
-                 BOOST_CHECK(response.privacy
+                 BOOST_CHECK(response_data.privacy
                              == api::file::get_info::Privacy::Private);
              }
          });
@@ -1047,7 +1081,7 @@ BOOST_AUTO_TEST_CASE(DeleteFile)
     Call(api::file::file_delete::Request(globals::test_quickkey2),
          [&](const api::file::file_delete::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
                  Fail(response);
              else
                  Success();
@@ -1062,21 +1096,26 @@ BOOST_AUTO_TEST_CASE(FileGetLinks)
     Call(api::file::get_links::Request(quickkeys),
          [&](const api::file::get_links::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
-             else if (response.links.empty())
-             {
-                 Fail("No links were provided.");
-             }
-             else if (!response.links[0].one_time_download)
-             {
-                 Fail("get_links should have provided a one time link.");
-             }
              else
              {
-                 Success();
+                 const auto & response_data = *response.response_data;
+
+                 if (response_data.links.empty())
+                 {
+                     Fail("No links were provided.");
+                 }
+                 else if (!response_data.links[0].one_time_download)
+                 {
+                     Fail("get_links should have provided a one time link.");
+                 }
+                 else
+                 {
+                     Success();
+                 }
              }
          });
 
@@ -1091,16 +1130,18 @@ BOOST_AUTO_TEST_CASE(PreConfirmCopyMove)
 
     Call(request, [&](const api::folder::get_info::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
-                 globals::copy_move::files = response.file_count;
-                 globals::copy_move::folders = response.folder_count;
+                 globals::copy_move::files = response_data.file_count;
+                 globals::copy_move::folders = response_data.folder_count;
              }
          });
 
@@ -1113,15 +1154,17 @@ BOOST_AUTO_TEST_CASE(CopyFolder)
                                     globals::test_folderkey2),
          [&](const api::folder::copy::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
-                 globals::test_folderkey3 = response.folderkey;
+                 globals::test_folderkey3 = response_data.folderkey;
                  globals::test_folder_name3 = globals::test_folder_name;
              }
          });
@@ -1135,7 +1178,7 @@ BOOST_AUTO_TEST_CASE(MoveFolder)
                                     globals::test_folderkey),
          [&](const api::folder::move::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
                  Fail(response);
              else
                  Success();
@@ -1152,14 +1195,17 @@ BOOST_AUTO_TEST_CASE(RenameFolder)
 
     Call(request, [&](const api::folder::update::Response & response)
          {
-             if (response.error_code || !response.device_revision)
+             if (!response.response_data
+                 || !response.response_data->device_revision)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
-                 globals::known_revision = *response.device_revision;
+                 globals::known_revision = *response_data.device_revision;
              }
          });
 
@@ -1174,21 +1220,23 @@ BOOST_AUTO_TEST_CASE(ConfirmCopyMove)
 
     Call(request, [&](const api::folder::get_info::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
                  // std::cout << "files: " << response.total_files << std::endl;
                  // std::cout << "folders: " << response.total_folders <<
                  // std::endl;
 
-                 BOOST_CHECK_EQUAL(response.file_count,
+                 BOOST_CHECK_EQUAL(response_data.file_count,
                                    globals::copy_move::files);
-                 BOOST_CHECK_EQUAL(response.folder_count,
+                 BOOST_CHECK_EQUAL(response_data.folder_count,
                                    globals::copy_move::folders + 1);
              }
          });
@@ -1202,7 +1250,7 @@ BOOST_AUTO_TEST_CASE(PurgeFile)
     Call(api::file::purge::Request(quickkeys),
          [&](const api::file::purge::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
                  Fail(response);
              else
                  Success();
@@ -1275,7 +1323,7 @@ BOOST_AUTO_TEST_CASE(UpdateFile)
          {
              Debug(response.debug);
 
-             if (response.error_code)
+             if (!response.response_data)
                  Fail(response);
              else
                  Success();
@@ -1299,7 +1347,7 @@ BOOST_AUTO_TEST_CASE(FolderDelete2)
             ),
         [&](const api::folder::folder_delete::Response & response)
         {
-            if ( response.error_code )
+            if (!response.response_data)
             {
                 Fail(response);
             }
@@ -1328,20 +1376,24 @@ BOOST_AUTO_TEST_CASE(DeviceGetChanges)
     Call(api::device::get_changes::Request(revision),
          [&](const api::device::get_changes::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
-                 globals::has_updated_files = !response.updated_files.empty();
+                 globals::has_updated_files
+                         = !response_data.updated_files.empty();
                  globals::has_updated_folders
-                         = !response.updated_folders.empty();
-                 globals::has_deleted_files = !response.deleted_files.empty();
+                         = !response_data.updated_folders.empty();
+                 globals::has_deleted_files
+                         = !response_data.deleted_files.empty();
                  globals::has_deleted_folders
-                         = !response.deleted_folders.empty();
+                         = !response_data.deleted_folders.empty();
              }
          });
 
@@ -1363,20 +1415,24 @@ BOOST_AUTO_TEST_CASE(DeviceGetChanges2)
     Call(api::device::get_changes::Request(revision),
          [&](const api::device::get_changes::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
-                 globals::has_updated_files |= !response.updated_files.empty();
+                 globals::has_updated_files
+                         |= !response_data.updated_files.empty();
                  globals::has_updated_folders
-                         |= !response.updated_folders.empty();
-                 globals::has_deleted_files |= !response.deleted_files.empty();
+                         |= !response_data.updated_folders.empty();
+                 globals::has_deleted_files
+                         |= !response_data.deleted_files.empty();
                  globals::has_deleted_folders
-                         |= !response.deleted_folders.empty();
+                         |= !response_data.deleted_folders.empty();
 
                  // Files were created.
                  BOOST_CHECK(globals::has_updated_files);
@@ -1406,17 +1462,19 @@ BOOST_AUTO_TEST_CASE(CreateFolderUser2)
     Call(api::folder::create::Request(globals::foreign_folder_name),
          [&](const api::folder::create::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & response_data = *response.response_data;
+
                  Success();
 
-                 globals::foreign_folderkey = response.folderkey;
+                 globals::foreign_folderkey = response_data.folderkey;
 
-                 BOOST_CHECK(!response.folderkey.empty());
+                 BOOST_CHECK(!response_data.folderkey.empty());
              }
          });
 
@@ -1428,14 +1486,10 @@ BOOST_AUTO_TEST_CASE(DeviceGetStatusPreDelete1)
     Call(api::device::get_status::Request(),
          [&](const api::device::get_status::Response & response)
          {
-             if (response.error_code)
-             {
+             if (!response.response_data)
                  Fail(response);
-             }
              else
-             {
                  Success();
-             }
          });
 
     StartWithDefaultTimeout();
@@ -1472,14 +1526,10 @@ BOOST_AUTO_TEST_CASE(FolderDelete1)
         Call(api::folder::folder_delete::Request(keys),
              [&](const api::folder::folder_delete::Response & response)
              {
-                 if (response.error_code)
-                 {
+                 if (!response.response_data)
                      Fail(response);
-                 }
                  else
-                 {
                      Success();
-                 }
              });
 
         StartWithDefaultTimeout();
@@ -1491,14 +1541,10 @@ BOOST_AUTO_TEST_CASE(DeviceGetStatusPreDelete2)
     Call(api::device::get_status::Request(),
          [&](const api::device::get_status::Response & response)
          {
-             if (response.error_code)
-             {
+             if (!response.response_data)
                  Fail(response);
-             }
              else
-             {
                  Success();
-             }
          });
 
     StartWithDefaultTimeout();
@@ -1535,7 +1581,7 @@ BOOST_AUTO_TEST_CASE(FolderDelete2)
         Call(api::folder::folder_delete::Request(keys),
              [&](const api::folder::folder_delete::Response & response)
              {
-                 if (response.error_code)
+                 if (!response.response_data)
                      Fail(response);
                  else
                      Success();
@@ -1550,14 +1596,10 @@ BOOST_AUTO_TEST_CASE(DeviceGetStatusPostDelete)
     Call(api::device::get_status::Request(),
          [&](const api::device::get_status::Response & response)
          {
-             if (response.error_code)
-             {
+             if (!response.response_data)
                  Fail(response);
-             }
              else
-             {
                  Success();
-             }
          });
 
     StartWithDefaultTimeout();
@@ -1586,7 +1628,7 @@ BOOST_AUTO_TEST_CASE(SpamTest)
                  ss << "SpamTest: Count: " << count;
                  Debug(ss.str());
 
-                 if (response.error_code)
+                 if (!response.response_data)
                  {
                      ++times_failed;
                      std::ostringstream error_ss;

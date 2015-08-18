@@ -7,7 +7,7 @@
 #include "ut_live.hpp"
 
 #ifndef OUTPUT_DEBUG
-#  define OUTPUT_DEBUG
+#define OUTPUT_DEBUG
 #endif
 
 #include "mediafire_sdk/api/user/destroy_action_token.hpp"
@@ -32,36 +32,38 @@
 
 namespace api = mf::api;
 
-namespace globals {
+namespace globals
+{
 using namespace ut::globals;
 std::string action_token;
 }  // namespace globals
 
-BOOST_FIXTURE_TEST_SUITE( s, ut::Fixture )
+BOOST_FIXTURE_TEST_SUITE(s, ut::Fixture)
 
 BOOST_AUTO_TEST_CASE(SessionTokenOverSessionMaintainerLive)
 {
     const api::credentials::Email & connection(globals::connection1);
 
-    Call(
-        api::user::get_session_token::Request(globals::connection1),
-        [connection, this](const api::user::get_session_token::Response & response)
-        {
-            Stop();
+    Call(api::user::get_session_token::Request(globals::connection1),
+         [connection, this](
+                 const api::user::get_session_token::Response & response)
+         {
+             Stop();
 
-            if ( response.error_code )
-            {
-                std::ostringstream ss;
-                ss << "User: " << connection.email << std::endl;
-                ss << "Password: " << connection.password << std::endl;
-                ss << "Error: " << response.error_string << std::endl;
-                BOOST_FAIL(ss.str());
-            }
-            else
-            {
-                BOOST_CHECK( ! response.session_token.empty() );
-            }
-        });
+             if (!response.response_data)
+             {
+                 std::ostringstream ss;
+                 ss << "User: " << connection.email << std::endl;
+                 ss << "Password: " << connection.password << std::endl;
+                 ss << "Error: " << response.error_string << std::endl;
+                 BOOST_FAIL(ss.str());
+             }
+             else
+             {
+                 const auto & response_data = *response.response_data;
+                 BOOST_CHECK(!response_data.session_token.empty());
+             }
+         });
 
     StartWithDefaultTimeout();
 }
@@ -73,21 +75,23 @@ BOOST_AUTO_TEST_CASE(UserGetInfo)
     Call(api::user::get_info::Request(),
          [&](const api::user::get_info::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & data = *response.response_data;
+
                  Log("Has facebook:",
-                     response.facebook && response.facebook->linked == Linked::Yes);
+                     data.facebook && data.facebook->linked == Linked::Yes);
                  Log("Has twitter:",
-                     response.twitter && response.twitter->linked == Linked::Yes);
+                     data.twitter && data.twitter->linked == Linked::Yes);
                  Log("Has gmail:",
-                     response.gmail && response.gmail->linked == Linked::Yes);
-                 Log("Email:", response.email);
-                 Log("Display name:", response.display_name);
-                 Log("Ekey:", response.ekey);
+                     data.gmail && data.gmail->linked == Linked::Yes);
+                 Log("Email:", data.email);
+                 Log("Display name:", data.display_name);
+                 Log("Ekey:", data.ekey);
 
                  Success();
              }
@@ -156,13 +160,15 @@ BOOST_AUTO_TEST_CASE(GetAvatar)
     Call(api::user::get_avatar::Request(),
          [&](const api::user::get_avatar::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
-                 Log("Avatar URL:", response.avatar_url);
+                 const auto & data = *response.response_data;
+
+                 Log("Avatar URL:", data.avatar_url);
 
                  Success();
              }
@@ -174,53 +180,55 @@ BOOST_AUTO_TEST_CASE(SessionMaintainerRestartable)
 {
     const api::credentials::Email & connection(globals::connection1);
 
-    Call(
-        api::user::get_session_token::Request(globals::connection1),
-        [connection, this](const api::user::get_session_token::Response & response)
-        {
-            Stop();
+    Call(api::user::get_session_token::Request(globals::connection1),
+         [connection, this](
+                 const api::user::get_session_token::Response & response)
+         {
+             Stop();
 
-            if ( response.error_code )
-            {
-                std::ostringstream ss;
-                ss << "User: " << connection.email << std::endl;
-                ss << "Password: " << connection.password << std::endl;
-                ss << "Error: " << response.error_string << std::endl;
-                BOOST_FAIL(ss.str());
-            }
-            else
-            {
-                BOOST_CHECK( ! response.session_token.empty() );
-            }
-        });
+             if (!response.response_data)
+             {
+                 std::ostringstream ss;
+                 ss << "User: " << connection.email << std::endl;
+                 ss << "Password: " << connection.password << std::endl;
+                 ss << "Error: " << response.error_string << std::endl;
+                 BOOST_FAIL(ss.str());
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
+                 BOOST_CHECK(!data.session_token.empty());
+             }
+         });
 
     StartWithDefaultTimeout();
 
     bool actuallyCalled = false;
-    Call(
-        api::user::get_session_token::Request(globals::connection1),
-        [&actuallyCalled, connection, this](const api::user::get_session_token::Response & response)
-        {
-            actuallyCalled = true;
-            Stop();
+    Call(api::user::get_session_token::Request(globals::connection1),
+         [&actuallyCalled, connection, this](
+                 const api::user::get_session_token::Response & response)
+         {
+             actuallyCalled = true;
+             Stop();
 
-            if ( response.error_code )
-            {
-                std::ostringstream ss;
-                ss << "User: " << connection.email << std::endl;
-                ss << "Password: " << connection.password << std::endl;
-                ss << "Error: " << response.error_string << std::endl;
-                BOOST_FAIL(ss.str());
-            }
-            else
-            {
-                BOOST_CHECK( ! response.session_token.empty() );
-            }
-        });
+             if (!response.response_data)
+             {
+                 std::ostringstream ss;
+                 ss << "User: " << connection.email << std::endl;
+                 ss << "Password: " << connection.password << std::endl;
+                 ss << "Error: " << response.error_string << std::endl;
+                 BOOST_FAIL(ss.str());
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
+                 BOOST_CHECK(!data.session_token.empty());
+             }
+         });
 
     StartWithDefaultTimeout();
 
-    BOOST_CHECK( actuallyCalled );
+    BOOST_CHECK(actuallyCalled);
 }
 
 BOOST_AUTO_TEST_CASE(CredentialsChangeOverSessionMaintainerLive)
@@ -229,77 +237,76 @@ BOOST_AUTO_TEST_CASE(CredentialsChangeOverSessionMaintainerLive)
     const api::credentials::Email & connection2(globals::connection2);
 
     // Start with default credentials
-    Call(
-        api::user::get_info::Request(),
-        [&](const api::user::get_info::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                BOOST_CHECK_EQUAL( response.email, connection1.email );
-                Stop();
-            }
-        });
+    Call(api::user::get_info::Request(),
+         [&](const api::user::get_info::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
+                 BOOST_CHECK_EQUAL(data.email, connection1.email);
+                 Stop();
+             }
+         });
 
     StartWithDefaultTimeout();
 
     // Call again with default credentials
     ChangeCredentials(connection1);
-    Call(
-        api::user::get_info::Request(),
-        [&](const api::user::get_info::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                BOOST_CHECK_EQUAL( response.email, connection1.email );
-                Stop();
-            }
-        });
+    Call(api::user::get_info::Request(),
+         [&](const api::user::get_info::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
+                 BOOST_CHECK_EQUAL(data.email, connection1.email);
+                 Stop();
+             }
+         });
 
     StartWithDefaultTimeout();
 
     // Call with new credentials
     ChangeCredentials(connection2);
-    Call(
-        api::user::get_info::Request(),
-        [&](const api::user::get_info::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                BOOST_CHECK_EQUAL( response.email, connection2.email );
-                Stop();
-            }
-        });
+    Call(api::user::get_info::Request(),
+         [&](const api::user::get_info::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
+                 BOOST_CHECK_EQUAL(data.email, connection2.email);
+                 Stop();
+             }
+         });
 
     StartWithDefaultTimeout();
 }
 
 BOOST_AUTO_TEST_CASE(UserGetLimits)
 {
-    Call(
-        api::user::get_limits::Request(),
-        [&](const api::user::get_limits::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                Success();
-            }
-        });
+    Call(api::user::get_limits::Request(),
+         [&](const api::user::get_limits::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 Success();
+             }
+         });
 
     StartWithDefaultTimeout();
 }
@@ -307,60 +314,59 @@ BOOST_AUTO_TEST_CASE(UserGetLimits)
 BOOST_AUTO_TEST_CASE(GetActionToken)
 {
     api::user::get_action_token::Request request(
-        api::user::get_action_token::Type::Image);
-    Call(
-        request,
-        [&](const api::user::get_action_token::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                globals::action_token = response.action_token;
-                Success();
-            }
-        });
+            api::user::get_action_token::Type::Image);
+    Call(request, [&](const api::user::get_action_token::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
+                 globals::action_token = data.action_token;
+                 Success();
+             }
+         });
 
     StartWithDefaultTimeout();
 }
 
 BOOST_AUTO_TEST_CASE(DestroyActionToken)
 {
-    Call(
-        api::user::destroy_action_token::Request(globals::action_token),
-        [&](const api::user::destroy_action_token::Response & response)
-        {
-            if ( response.error_code )
-                Fail(response);
-            else
-                Success();
-        });
+    Call(api::user::destroy_action_token::Request(globals::action_token),
+         [&](const api::user::destroy_action_token::Response & response)
+         {
+             if (!response.response_data)
+                 Fail(response);
+             else
+                 Success();
+         });
 
     StartWithDefaultTimeout();
 }
 
 BOOST_AUTO_TEST_CASE(GetLoginToken)
 {
-    api::credentials::Email email_creds = {ut::user1::username, ut::user1::password};
-    Call(
-        api::user::get_login_token::Request(email_creds),
-        [&](const api::user::get_login_token::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                Success();
-                std::cout << "Got login token: "
-                          << "https://" << ut::constants::host
-                          << "/api/user/login_with_token.php?login_token="
-                          << response.login_token << std::endl;
-            }
-        });
+    api::credentials::Email email_creds
+            = {ut::user1::username, ut::user1::password};
+    Call(api::user::get_login_token::Request(email_creds),
+         [&](const api::user::get_login_token::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
+                 Success();
+                 std::cout << "Got login token: "
+                           << "https://" << ut::constants::host
+                           << "/api/user/login_with_token.php?login_token="
+                           << data.login_token << std::endl;
+             }
+         });
 
     StartWithDefaultTimeout();
 }
@@ -370,15 +376,16 @@ BOOST_AUTO_TEST_CASE(FetchTOS)
     namespace tos = api::user::fetch_tos;
     Call(tos::Request(), [&](const tos::Response & response)
          {
-             if (response.error_code)
+             if (!response.response_data)
              {
                  Fail(response);
              }
              else
              {
+                 const auto & data = *response.response_data;
                  Log("User accepted terms:",
-                     response.user_accepted_terms == tos::TOSAccepted::Yes);
-                 Log("Acceptance token:", response.acceptance_token);
+                     data.user_accepted_terms == tos::TOSAccepted::Yes);
+                 Log("Acceptance token:", data.acceptance_token);
                  Success();
              }
          });
@@ -388,43 +395,44 @@ BOOST_AUTO_TEST_CASE(FetchTOS)
 
 BOOST_AUTO_TEST_CASE(EkeyTest)
 {
-    api::credentials::Email email_creds = {ut::user1::username, ut::user1::password};
+    api::credentials::Email email_creds
+            = {ut::user1::username, ut::user1::password};
     boost::optional<api::credentials::Ekey> ekey_creds;
-    Call(
-        api::user::get_session_token::Request(email_creds),
-        [&](const api::user::get_session_token::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                std::cout << "Got ekey: " << response.ekey << std::endl;
-                ekey_creds = api::credentials::Ekey{response.ekey, ut::user1::password};
-                Success();
-            }
-        });
+    Call(api::user::get_session_token::Request(email_creds),
+         [&](const api::user::get_session_token::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
+                 std::cout << "Got ekey: " << data.ekey << std::endl;
+                 ekey_creds = api::credentials::Ekey{data.ekey,
+                                                     ut::user1::password};
+                 Success();
+             }
+         });
 
     StartWithDefaultTimeout();
 
     // Now use the ekey
-    BOOST_REQUIRE( ekey_creds );
+    BOOST_REQUIRE(ekey_creds);
 
-    Call(
-        api::user::get_session_token::Request(*ekey_creds),
-        [&](const api::user::get_session_token::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                std::cout << "Logged in with ekey!" << std::endl;
-                Success();
-            }
-        });
+    Call(api::user::get_session_token::Request(*ekey_creds),
+         [&](const api::user::get_session_token::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 std::cout << "Logged in with ekey!" << std::endl;
+                 Success();
+             }
+         });
 
     StartWithDefaultTimeout();
 }

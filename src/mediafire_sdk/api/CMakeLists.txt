@@ -87,6 +87,10 @@ set(API_HEADERS
     actions/poll_changes_impl.hpp
     actions/poll_foreign_changes.hpp
     actions/poll_foreign_changes_impl.hpp
+    actions/rename_file.hpp
+    actions/rename_file_impl.hpp
+    actions/rename_folder.hpp
+    actions/rename_folder_impl.hpp
     actions/get_foreign_resources_device.hpp
     actions/get_foreign_resources_device_impl.hpp
 

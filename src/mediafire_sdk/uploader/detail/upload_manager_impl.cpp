@@ -15,11 +15,12 @@ namespace action_token = mf::api::user::get_action_token;
 namespace posix_time = boost::posix_time;
 using sclock = std::chrono::steady_clock;
 
-namespace {
+namespace
+{
 const std::chrono::seconds kActionTokenRetry(15);
 // Default lifetime is 1440 minutes(24h).  We should get a new upload token
 // before it expires.
-const std::chrono::minutes kActionTokenLife(1440/4*3);
+const std::chrono::minutes kActionTokenLife(1440 / 4 * 3);
 
 mf::uploader::detail::UploadHandle NextUploadHandle()
 {
@@ -32,22 +33,24 @@ mf::uploader::detail::UploadHandle NextUploadHandle()
 }
 }  // namespace
 
-namespace mf {
-namespace uploader {
-namespace detail {
+namespace mf
+{
+namespace uploader
+{
+namespace detail
+{
 
 UploadManagerImpl::UploadManagerImpl(
-        ::mf::api::SessionMaintainer * session_maintainer
-    ) :
-    session_maintainer_(session_maintainer),
-    io_service_(session_maintainer->HttpConfig()->GetWorkIoService()),
-    action_token_state_(ActionTokenState::Invalid),
-    action_token_retry_timer_(*io_service_),
-    max_concurrent_hashings_(2),
-    max_concurrent_uploads_(2),
-    current_hashings_(0),
-    current_uploads_(0),
-    disable_enqueue_(false)
+        ::mf::api::SessionMaintainer * session_maintainer)
+        : session_maintainer_(session_maintainer),
+          io_service_(session_maintainer->HttpConfig()->GetWorkIoService()),
+          action_token_state_(ActionTokenState::Invalid),
+          action_token_retry_timer_(*io_service_),
+          max_concurrent_hashings_(2),
+          max_concurrent_uploads_(2),
+          current_hashings_(0),
+          current_uploads_(0),
+          disable_enqueue_(false)
 {
 }
 
@@ -66,17 +69,14 @@ UploadManagerImpl::~UploadManagerImpl()
     for (auto & request : requests)
     {
         request->Disconnect();
-        request->process_event(event::Error{
-            make_error_code(mf::uploader::errc::Cancelled),
-            "Cancelled due to shutdown."
-            });
+        request->process_event(
+                event::Error{make_error_code(mf::uploader::errc::Cancelled),
+                             "Cancelled due to shutdown."});
     }
 }
 
-UploadHandle UploadManagerImpl::Add(
-        const UploadRequest & upload_request,
-        StatusCallback callback
-    )
+UploadHandle UploadManagerImpl::Add(const UploadRequest & upload_request,
+                                    StatusCallback callback)
 {
     auto upload_handle = NextUploadHandle();
     UploadConfig config;
@@ -85,8 +85,8 @@ UploadHandle UploadManagerImpl::Add(
     config.session_maintainer = session_maintainer_;
     config.filepath = upload_request.local_file_path_;
     config.on_duplicate_action = upload_request.on_duplicate_action_;
-    config.callback_interface =
-        static_cast<UploadStateMachineCallbackInterface*>(this);
+    config.callback_interface
+            = static_cast<UploadStateMachineCallbackInterface *>(this);
     config.status_callback = callback;
     config.cloud_file_name = upload_request.utf8_target_name_;
     config.target_folder = upload_request.upload_target_folder_;
@@ -108,18 +108,15 @@ UploadHandle UploadManagerImpl::Add(
 
 void UploadManagerImpl::ModifyUpload(
         UploadHandle upload_handle,
-        ::mf::uploader::UploadModification upload_modification
-    )
+        ::mf::uploader::UploadModification upload_modification)
 {
     class Visitor : public boost::static_visitor<>
     {
     public:
-        Visitor(
-                UploadManagerImpl * um,
-                UploadHandle upload_handle
-            ) :
-            this_(um), upload_handle_(upload_handle)
-        {}
+        Visitor(UploadManagerImpl * um, UploadHandle upload_handle)
+                : this_(um), upload_handle_(upload_handle)
+        {
+        }
 
         void operator()(modification::Cancel) const
         {
@@ -130,9 +127,8 @@ void UploadManagerImpl::ModifyUpload(
                 {
                     lock.unlock();
                     request->ProcessEvent(event::Error{
-                        make_error_code(mf::uploader::errc::Cancelled),
-                        "Cancellation requested"
-                        });
+                            make_error_code(mf::uploader::errc::Cancelled),
+                            "Cancellation requested"});
                     return;
                 }
             }
@@ -147,9 +143,8 @@ void UploadManagerImpl::ModifyUpload(
                 {
                     lock.unlock();
                     request->ProcessEvent(event::Error{
-                        make_error_code(mf::uploader::errc::Paused),
-                        "Pause requested."
-                        });
+                            make_error_code(mf::uploader::errc::Paused),
+                            "Pause requested."});
                     return;
                 }
             }
@@ -174,10 +169,10 @@ void UploadManagerImpl::EnqueueTick()
 {
     mf::utils::unique_lock<mf::utils::mutex> lock(mutex_);
 
-    if ( ! disable_enqueue_ )
+    if (!disable_enqueue_)
     {
-        io_service_->post( boost::bind( &UploadManagerImpl::Tick,
-                shared_from_this()) );
+        io_service_->post(
+                boost::bind(&UploadManagerImpl::Tick, shared_from_this()));
     }
 }
 
@@ -185,8 +180,9 @@ void UploadManagerImpl::Tick_StartHashings()
 {
     mf::utils::unique_lock<mf::utils::mutex> lock(mutex_);
 
-    while ( ! to_hash_.empty() && (current_hashings_ +
-            enqueued_to_start_hashings_.size()) < max_concurrent_hashings_ )
+    while (!to_hash_.empty()
+           && (current_hashings_ + enqueued_to_start_hashings_.size())
+                      < max_concurrent_hashings_)
     {
         auto request = to_hash_.front();
         to_hash_.pop_front();
@@ -196,11 +192,10 @@ void UploadManagerImpl::Tick_StartHashings()
         auto self = shared_from_this();
 
         // Enqueue start
-        io_service_->post(
-            [this, self, request]()
-            {
-                request->process_event(event::StartHash{});
-            });
+        io_service_->post([this, self, request]()
+                          {
+                              request->process_event(event::StartHash{});
+                          });
     }
 }
 
@@ -218,21 +213,21 @@ void UploadManagerImpl::Tick_StartUploads()
     auto CanUploadMore = [this]()
     {
         auto size = current_uploads_ + enqueued_to_start_uploads_.size();
-        auto result = ( size < max_concurrent_uploads_ );
+        auto result = (size < max_concurrent_uploads_);
 
         return result;
     };
 
-    if ( ! to_upload_.empty() )
+    if (!to_upload_.empty())
     {
         const auto now = sclock::now();
-        if ( action_token_state_ != ActionTokenState::Valid
-            || action_token_expires_ < now )
+        if (action_token_state_ != ActionTokenState::Valid
+            || action_token_expires_ < now)
         {
             // Invalid token
 
-            if ( action_token_state_ == ActionTokenState::Error
-                && now < action_token_expires_ )
+            if (action_token_state_ == ActionTokenState::Error
+                && now < action_token_expires_)
             {
                 // Skip till timeout.
             }
@@ -245,28 +240,27 @@ void UploadManagerImpl::Tick_StartUploads()
 
                 auto self = shared_from_this();
                 session_maintainer_->Call(
-                    action_token::Request(action_token::Type::Upload),
-                    [self](action_token::Response response)
-                    {
-                        self->HandleActionToken(response);
-                    }
-                    );
+                        action_token::Request(action_token::Type::Upload),
+                        [self](action_token::Response response)
+                        {
+                            self->HandleActionToken(response);
+                        });
             }
             // If retrieving or error and not reached retry timeout, skip.
         }
-        else if ( CanUploadMore() )
+        else if (CanUploadMore())
         {
-            assert( ! action_token_.empty() );
+            assert(!action_token_.empty());
 
             const auto token = action_token_;
 
             for (auto it = to_upload_.begin();
-                it != to_upload_.end() && CanUploadMore();)
+                 it != to_upload_.end() && CanUploadMore();)
             {
                 // Skip duplicate hashes
                 auto request = *it;
-                if (uploading_hashes_.find(request->hash()) ==
-                    uploading_hashes_.end())
+                if (uploading_hashes_.find(request->hash())
+                    == uploading_hashes_.end())
                 {
                     // Remove iterator before process event.
                     it = to_upload_.erase(it);
@@ -276,11 +270,11 @@ void UploadManagerImpl::Tick_StartUploads()
                     enqueued_to_start_uploads_.insert(request.get());
 
                     auto self = shared_from_this();
-                    io_service_->post(
-                        [this, self, request, token]()
-                        {
-                            request->process_event(event::StartUpload{token});
-                        });
+                    io_service_->post([this, self, request, token]()
+                                      {
+                                          request->process_event(
+                                                  event::StartUpload{token});
+                                      });
 
                     // Only do one
                     break;
@@ -301,12 +295,11 @@ void UploadManagerImpl::Tick_StartUploads()
 }
 
 void UploadManagerImpl::HandleActionToken(
-        const mf::api::user::get_action_token::Response & response
-    )
+        const mf::api::user::get_action_token::Response & response)
 {
     mf::utils::unique_lock<mf::utils::mutex> lock(mutex_);
 
-    if ( response.error_code )
+    if (!response.response_data)
     {
         // Retry soon if unable to obtain token.
         action_token_state_ = ActionTokenState::Error;
@@ -316,18 +309,16 @@ void UploadManagerImpl::HandleActionToken(
         // unlock before calling external
         lock.unlock();
 
-        action_token_retry_timer_.async_wait(
-            boost::bind(
-                &UploadManagerImpl::ActionTokenRetry,
-                shared_from_this(),
-                boost::asio::placeholders::error
-            )
-        );
+        action_token_retry_timer_.async_wait(boost::bind(
+                &UploadManagerImpl::ActionTokenRetry, shared_from_this(),
+                boost::asio::placeholders::error));
     }
     else
     {
+        const auto & response_data = *response.response_data;
+
         action_token_state_ = ActionTokenState::Valid;
-        action_token_ = response.action_token;
+        action_token_ = response_data.action_token;
         action_token_expires_ = sclock::now() + kActionTokenLife;
 
         // Unlock before calling external
@@ -337,9 +328,7 @@ void UploadManagerImpl::HandleActionToken(
     }
 }
 
-void UploadManagerImpl::ActionTokenRetry(
-        const boost::system::error_code & err
-    )
+void UploadManagerImpl::ActionTokenRetry(const boost::system::error_code & err)
 {
     mf::utils::unique_lock<mf::utils::mutex> lock(mutex_);
 
@@ -396,8 +385,7 @@ void UploadManagerImpl::HandleRemoveToUpload(StateMachinePointer request)
 {
     mf::utils::unique_lock<mf::utils::mutex> lock(mutex_);
 
-    auto it = std::find(to_upload_.begin(), to_upload_.end(),
-        request);
+    auto it = std::find(to_upload_.begin(), to_upload_.end(), request);
     if (it != to_upload_.end())
         to_upload_.erase(it);
 
@@ -411,7 +399,7 @@ void UploadManagerImpl::HandleComplete(StateMachinePointer request)
 {
     mf::utils::unique_lock<mf::utils::mutex> lock(mutex_);
 
-    // Clear 
+    // Clear
     enqueued_to_start_hashings_.erase(request.get());
     enqueued_to_start_uploads_.erase(request.get());
 
@@ -420,7 +408,7 @@ void UploadManagerImpl::HandleComplete(StateMachinePointer request)
     const auto chunk_data = request->GetChunkData();
 
     // Remove hashes to allow duplicates
-    if ( ! chunk_data.hash.empty() )
+    if (!chunk_data.hash.empty())
     {
         uploading_hashes_.erase(request->hash());
     }

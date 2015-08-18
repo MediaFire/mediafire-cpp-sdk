@@ -38,7 +38,7 @@ namespace {
 using namespace v1_3;  // NOLINT
 bool LinksFromPropertyBranch(
         Response * response,
-        Response::Links * value,
+        ResponseData::Links * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -259,14 +259,19 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->description = "";
-    response->mimetype = "";
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->description = "";
+    response_data_ptr->mimetype = "";
 
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.fileinfo.created",
-            &response->created_datetime ) )
+            &response_data_ptr->created_datetime ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.fileinfo.created\"");
@@ -275,7 +280,7 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.fileinfo.description",
-            &response->description);
+            &response_data_ptr->description);
 
     // create_content_parse_single optional no default
     {
@@ -285,7 +290,7 @@ void Impl::ParseResponse( Response * response )
                 "response.new_device_revision",
                 &optarg) )
         {
-            response->new_device_revision = optarg;
+            response_data_ptr->new_device_revision = optarg;
         }
     }
 
@@ -293,7 +298,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.fileinfo.downloads",
-            &response->downloads ) )
+            &response_data_ptr->downloads ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.fileinfo.downloads\"");
@@ -302,7 +307,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.fileinfo.hash",
-            &response->filehash ) )
+            &response_data_ptr->filehash ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.fileinfo.hash\"");
@@ -311,7 +316,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.fileinfo.filename",
-            &response->filename ) )
+            &response_data_ptr->filename ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.fileinfo.filename\"");
@@ -320,7 +325,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.fileinfo.size",
-            &response->filesize ) )
+            &response_data_ptr->filesize ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.fileinfo.size\"");
@@ -329,7 +334,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.fileinfo.filetype",
-            &response->filetype ) )
+            &response_data_ptr->filetype ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.fileinfo.filetype\"");
@@ -338,7 +343,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.fileinfo.revision",
-            &response->file_revision ) )
+            &response_data_ptr->file_revision ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.fileinfo.revision\"");
@@ -347,7 +352,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.fileinfo.flag",
-            &response->flag ) )
+            &response_data_ptr->flag ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.fileinfo.flag\"");
@@ -357,11 +362,11 @@ void Impl::ParseResponse( Response * response )
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.fileinfo.links");
 
-        Response::Links optarg;
+        ResponseData::Links optarg;
         if ( LinksFromPropertyBranch(
                 response, &optarg, branch) )
         {
-            response->links = std::move(optarg);
+            response_data_ptr->links = std::move(optarg);
         }
         else
         {
@@ -385,7 +390,7 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.fileinfo.mimetype",
-            &response->mimetype);
+            &response_data_ptr->mimetype);
 
     {
         std::string optval;
@@ -396,9 +401,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->password_protected = PasswordProtected::Unprotected;
+                response_data_ptr->password_protected = PasswordProtected::Unprotected;
             else if ( optval == "yes" )
-                response->password_protected = PasswordProtected::Protected;
+                response_data_ptr->password_protected = PasswordProtected::Protected;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -419,9 +424,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "public" )
-                response->privacy = Privacy::Public;
+                response_data_ptr->privacy = Privacy::Public;
             else if ( optval == "private" )
-                response->privacy = Privacy::Private;
+                response_data_ptr->privacy = Privacy::Private;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -437,10 +442,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.fileinfo.quickkey",
-            &response->quickkey ) )
+            &response_data_ptr->quickkey ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.fileinfo.quickkey\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }
