@@ -1581,7 +1581,7 @@ def get_content_parsing(api):
         ret = ret + """
 
     // Only on success, return parsed data structure with response
-    response->response_data = std::move(response_data); """
+    response->response_data = std::move(response_data);"""
 
     return ret
 
