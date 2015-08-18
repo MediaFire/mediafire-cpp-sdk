@@ -2179,6 +2179,25 @@ set(API_TEMPLATE_GENERATED_HEADERS
         print(target_file + ' modified')
 
 
+def generate_ignored(target_file, cpp_sources, hpp_sources):
+    """Generate a CMake file to be included in the project to build the
+    templates"""
+
+    cpp_sources.sort()
+    hpp_sources.sort()
+
+    content = '''# This file is auto generated.  Do NOT edit by hand.
+'''
+    for name in cpp_sources:
+        content = content + name + "\n"
+
+    for name in hpp_sources:
+        content = content + name + "\n"
+
+    if write_contents(content, target_file):
+        print(target_file + ' modified')
+
+
 def common_header_includes(domain, domain_data):
 
     domain_parts = domain.split('/')
@@ -2301,6 +2320,10 @@ def main():
     generate_cmake_include(os.path.join(args.destination_path,
                                         'GeneratedList.txt'),
                            source_files, header_files)
+
+    generate_ignored(os.path.join(args.destination_path,
+                                  '.gitignore'),
+                     source_files, header_files)
 
 if __name__ == "__main__":
     main()
