@@ -16,8 +16,16 @@ if ( NOT "${MFAPI_APP_KEY}" STREQUAL "" )
     add_definitions(-DMFAPI_APP_KEY="${MFAPI_APP_KEY}")
 endif( NOT "${MFAPI_APP_KEY}" STREQUAL "" )
 
+set(PYTHON2_EXECUTABLE "python" CACHE PATH "Path to python2")
+
 # -- API by path ---------------
 project (mf_api_sdk CXX)
+
+# Generate source from template
+execute_process(
+  COMMAND ${PYTHON2_EXECUTABLE} "gen_api_template.py"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
 
 set(API_SOURCES
     detail/session_maintainer_locker.cpp
