@@ -54,7 +54,7 @@ namespace {
 using namespace v1_1;  // NOLINT
 bool ProductFromPropertyBranch(
         Response * response,
-        Response::Product * value,
+        ResponseData::Product * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -353,18 +353,23 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_struct_parse TArray
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.products");
-        response->products.reserve( response->pt.size() );
+        response_data_ptr->products.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::Product optarg;
+            ResponseData::Product optarg;
             if ( ProductFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->products.push_back(std::move(optarg));
+                response_data_ptr->products.push_back(std::move(optarg));
             else
                 return;  // error set already
         }
@@ -377,6 +382,9 @@ void Impl::ParseResponse( Response * response )
             mf::api::api_code::ContentInvalidData,
             "missing \"response.products\"");
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

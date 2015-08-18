@@ -27,7 +27,7 @@ namespace {
 using namespace v1_3;  // NOLINT
 bool FileVersionFromPropertyBranch(
         Response * response,
-        Response::FileVersion * value,
+        ResponseData::FileVersion * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -140,24 +140,32 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_struct_parse TArray
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.file_versions");
-        response->file_versions.reserve( response->pt.size() );
+        response_data_ptr->file_versions.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::FileVersion optarg;
+            ResponseData::FileVersion optarg;
             if ( FileVersionFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->file_versions.push_back(std::move(optarg));
+                response_data_ptr->file_versions.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
     {
         // Is optional
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

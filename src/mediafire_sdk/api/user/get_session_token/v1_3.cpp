@@ -142,27 +142,37 @@ void v1_3::Request::HandleContent(const std::string & url,
     ResponseType response;
     response.InitializeWithContent(url, "", headers, content);
 
+    ResponseData response_data;
+
     // These could possibly be available when an error occurs or on success.
-    GetIfExists(response.pt, "response.pkey", &response.pkey);
-    GetIfExists(response.pt, "response.secret_key", &response.secret_key);
-    GetIfExists(response.pt, "response.time", &response.time);
+    {
+        std::string pkey;
+        if (GetIfExists(response.pt, "response.pkey", &pkey))
+            response.pkey = pkey;
+    }
+    GetIfExists(response.pt, "response.secret_key", &response_data.secret_key);
+    GetIfExists(response.pt, "response.time", &response_data.time);
 
     if (!response.error_code)
     {
         if (!GetIfExists(response.pt, "response.session_token",
-                         &response.session_token))
+                         &response_data.session_token))
         {
             response.error_code
                     = make_error_code(mf::api::api_code::ContentInvalidData);
             response.error_string = "missing session token";
         }
-        if (!GetIfExists(response.pt, "response.ekey", &response.ekey))
+        if (!GetIfExists(response.pt, "response.ekey", &response_data.ekey))
         {
             response.error_code
                     = make_error_code(mf::api::api_code::ContentInvalidData);
             response.error_string = "missing \"response.ekey\"";
         }
     }
+
+    // Only return data structure if no errors
+    if (!response.error_code)
+        response.response_data = std::move(response_data);
 
     callback_(response);
 }

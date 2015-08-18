@@ -73,18 +73,23 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->email_address_validated = EmailValidation::NeedsValidation;
-    response->instant_uploads = InstantUploads::Disabled;
-    response->show_download_page_me_from_me = DownloadPage::NotSkipped;
-    response->show_download_page_me_from_others = DownloadPage::NotSkipped;
-    response->show_download_page_others_from_me = DownloadPage::NotSkipped;
-    response->auto_bandwidth = AutoBandwidth::NoAction;
-    response->used_storage_size = 0;
-    response->storage_limit = 0;
-    response->storage_limit_exceeded = StorageLimit::InBounds;
-    response->previous_file_versions = 0;
-    response->share_link_status = ShareLinkStatus::Inherit;
-    response->collect_metadata = CollectMetadata::No;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->email_address_validated = EmailValidation::NeedsValidation;
+    response_data_ptr->instant_uploads = InstantUploads::Disabled;
+    response_data_ptr->show_download_page_me_from_me = DownloadPage::NotSkipped;
+    response_data_ptr->show_download_page_me_from_others = DownloadPage::NotSkipped;
+    response_data_ptr->show_download_page_others_from_me = DownloadPage::NotSkipped;
+    response_data_ptr->auto_bandwidth = AutoBandwidth::NoAction;
+    response_data_ptr->used_storage_size = 0;
+    response_data_ptr->storage_limit = 0;
+    response_data_ptr->storage_limit_exceeded = StorageLimit::InBounds;
+    response_data_ptr->previous_file_versions = 0;
+    response_data_ptr->share_link_status = ShareLinkStatus::Inherit;
+    response_data_ptr->collect_metadata = CollectMetadata::No;
 
     {
         std::string optval;
@@ -95,9 +100,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->email_address_validated = EmailValidation::NeedsValidation;
+                response_data_ptr->email_address_validated = EmailValidation::NeedsValidation;
             else if ( optval == "yes" )
-                response->email_address_validated = EmailValidation::Validated;
+                response_data_ptr->email_address_validated = EmailValidation::Validated;
         }
     }
 
@@ -110,9 +115,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->instant_uploads = InstantUploads::Disabled;
+                response_data_ptr->instant_uploads = InstantUploads::Disabled;
             else if ( optval == "yes" )
-                response->instant_uploads = InstantUploads::Enabled;
+                response_data_ptr->instant_uploads = InstantUploads::Enabled;
         }
     }
 
@@ -125,9 +130,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->show_download_page_me_from_me = DownloadPage::Skipped;
+                response_data_ptr->show_download_page_me_from_me = DownloadPage::Skipped;
             else if ( optval == "yes" )
-                response->show_download_page_me_from_me = DownloadPage::NotSkipped;
+                response_data_ptr->show_download_page_me_from_me = DownloadPage::NotSkipped;
         }
     }
 
@@ -140,9 +145,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->show_download_page_me_from_others = DownloadPage::Skipped;
+                response_data_ptr->show_download_page_me_from_others = DownloadPage::Skipped;
             else if ( optval == "yes" )
-                response->show_download_page_me_from_others = DownloadPage::NotSkipped;
+                response_data_ptr->show_download_page_me_from_others = DownloadPage::NotSkipped;
         }
     }
 
@@ -155,9 +160,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->show_download_page_others_from_me = DownloadPage::Skipped;
+                response_data_ptr->show_download_page_others_from_me = DownloadPage::Skipped;
             else if ( optval == "yes" )
-                response->show_download_page_others_from_me = DownloadPage::NotSkipped;
+                response_data_ptr->show_download_page_others_from_me = DownloadPage::NotSkipped;
         }
     }
 
@@ -170,9 +175,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->auto_bandwidth = AutoBandwidth::NoAction;
+                response_data_ptr->auto_bandwidth = AutoBandwidth::NoAction;
             else if ( optval == "yes" )
-                response->auto_bandwidth = AutoBandwidth::PurchaseMoreAutomatically;
+                response_data_ptr->auto_bandwidth = AutoBandwidth::PurchaseMoreAutomatically;
         }
     }
 
@@ -180,13 +185,13 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.settings.used_storage_size",
-            &response->used_storage_size);
+            &response_data_ptr->used_storage_size);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.settings.storage_limit",
-            &response->storage_limit);
+            &response_data_ptr->storage_limit);
 
     {
         std::string optval;
@@ -197,9 +202,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->storage_limit_exceeded = StorageLimit::InBounds;
+                response_data_ptr->storage_limit_exceeded = StorageLimit::InBounds;
             else if ( optval == "yes" )
-                response->storage_limit_exceeded = StorageLimit::Exceeded;
+                response_data_ptr->storage_limit_exceeded = StorageLimit::Exceeded;
         }
     }
 
@@ -207,7 +212,7 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.settings.previous_file_versions",
-            &response->previous_file_versions);
+            &response_data_ptr->previous_file_versions);
 
     {
         std::string optval;
@@ -218,11 +223,11 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "disabled" )
-                response->share_link_status = ShareLinkStatus::Disabled;
+                response_data_ptr->share_link_status = ShareLinkStatus::Disabled;
             else if ( optval == "enabled" )
-                response->share_link_status = ShareLinkStatus::Enabled;
+                response_data_ptr->share_link_status = ShareLinkStatus::Enabled;
             else if ( optval == "inherit" )
-                response->share_link_status = ShareLinkStatus::Inherit;
+                response_data_ptr->share_link_status = ShareLinkStatus::Inherit;
         }
     }
 
@@ -235,11 +240,14 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->collect_metadata = CollectMetadata::No;
+                response_data_ptr->collect_metadata = CollectMetadata::No;
             else if ( optval == "yes" )
-                response->collect_metadata = CollectMetadata::Yes;
+                response_data_ptr->collect_metadata = CollectMetadata::Yes;
         }
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

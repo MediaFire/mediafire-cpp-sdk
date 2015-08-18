@@ -104,6 +104,11 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     {
         std::string optval;
         // create_content_enum_parse TSingle
@@ -113,9 +118,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->storage_limit_exceeded = StorageLimit::WithinBounds;
+                response_data_ptr->storage_limit_exceeded = StorageLimit::WithinBounds;
             else if ( optval == "yes" )
-                response->storage_limit_exceeded = StorageLimit::Exceeded;
+                response_data_ptr->storage_limit_exceeded = StorageLimit::Exceeded;
         }
     }
 
@@ -127,7 +132,7 @@ void Impl::ParseResponse( Response * response )
                 "response.storage_limit",
                 &optarg) )
         {
-            response->storage_limit = optarg;
+            response_data_ptr->storage_limit = optarg;
         }
     }
 
@@ -139,7 +144,7 @@ void Impl::ParseResponse( Response * response )
                 "response.used_storage_size",
                 &optarg) )
         {
-            response->used_storage_size = optarg;
+            response_data_ptr->used_storage_size = optarg;
         }
     }
 
@@ -152,9 +157,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->known_by_cloud = KnownByCloud::Known;
+                response_data_ptr->known_by_cloud = KnownByCloud::Known;
             else if ( optval == "yes" )
-                response->known_by_cloud = KnownByCloud::Unknown;
+                response_data_ptr->known_by_cloud = KnownByCloud::Unknown;
         }
     }
 
@@ -166,7 +171,7 @@ void Impl::ParseResponse( Response * response )
                 "response.quickkey",
                 &optarg) )
         {
-            response->quickkey = optarg;
+            response_data_ptr->quickkey = optarg;
         }
     }
 
@@ -178,7 +183,7 @@ void Impl::ParseResponse( Response * response )
                 "response.duplicate_quickkey",
                 &optarg) )
         {
-            response->duplicate_quickkey = optarg;
+            response_data_ptr->duplicate_quickkey = optarg;
         }
     }
 
@@ -191,9 +196,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->duplicate_name = DuplicateName::NoPreexistingName;
+                response_data_ptr->duplicate_name = DuplicateName::NoPreexistingName;
             else if ( optval == "yes" )
-                response->duplicate_name = DuplicateName::DuplicateNameExists;
+                response_data_ptr->duplicate_name = DuplicateName::DuplicateNameExists;
         }
     }
 
@@ -205,7 +210,7 @@ void Impl::ParseResponse( Response * response )
                 "response.resumable_upload.upload_key",
                 &optarg) )
         {
-            response->upload_key = optarg;
+            response_data_ptr->upload_key = optarg;
         }
     }
 
@@ -218,9 +223,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->all_units_ready = UnitsReady::NotReady;
+                response_data_ptr->all_units_ready = UnitsReady::NotReady;
             else if ( optval == "yes" )
-                response->all_units_ready = UnitsReady::AllUnitsReady;
+                response_data_ptr->all_units_ready = UnitsReady::AllUnitsReady;
         }
     }
 
@@ -232,7 +237,7 @@ void Impl::ParseResponse( Response * response )
                 "response.resumable_upload.number_of_units",
                 &optarg) )
         {
-            response->number_of_units = optarg;
+            response_data_ptr->number_of_units = optarg;
         }
     }
 
@@ -244,7 +249,7 @@ void Impl::ParseResponse( Response * response )
                 "response.resumable_upload.unit_size",
                 &optarg) )
         {
-            response->unit_size = optarg;
+            response_data_ptr->unit_size = optarg;
         }
     }
 
@@ -256,7 +261,7 @@ void Impl::ParseResponse( Response * response )
                 "response.resumable_upload.bitmap.count",
                 &optarg) )
         {
-            response->bitmap_count = optarg;
+            response_data_ptr->bitmap_count = optarg;
         }
     }
 
@@ -264,7 +269,7 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.resumable_upload.bitmap.words");
-        response->bitmap_words.reserve( branch.size() );
+        response_data_ptr->bitmap_words.reserve( branch.size() );
         for ( auto & it : branch )
         {
             uint16_t result;
@@ -272,7 +277,7 @@ void Impl::ParseResponse( Response * response )
                     it.second,
                     &result ) )
             {
-                response->bitmap_words.push_back(result);
+                response_data_ptr->bitmap_words.push_back(result);
             }
             else
             {
@@ -284,6 +289,9 @@ void Impl::ParseResponse( Response * response )
     {
         // The value is optional.
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

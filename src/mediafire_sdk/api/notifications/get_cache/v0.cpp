@@ -27,7 +27,7 @@ namespace {
 using namespace v0;  // NOLINT
 bool NotificationFromPropertyBranch(
         Response * response,
-        Response::Notification * value,
+        ResponseData::Notification * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -155,18 +155,23 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_struct_parse TArray
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.notifications");
-        response->notifications.reserve( response->pt.size() );
+        response_data_ptr->notifications.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::Notification optarg;
+            ResponseData::Notification optarg;
             if ( NotificationFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->notifications.push_back(std::move(optarg));
+                response_data_ptr->notifications.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
@@ -178,10 +183,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.num_older",
-            &response->number_older ) )
+            &response_data_ptr->number_older ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.num_older\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

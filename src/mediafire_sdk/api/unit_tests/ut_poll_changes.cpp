@@ -36,18 +36,16 @@ BOOST_AUTO_TEST_CASE(UTPollChanges)
 
     api::SessionMaintainer stm(http_config);
 
-    stm.SetLoginCredentials(
-            api::credentials::Email{username, password});
+    stm.SetLoginCredentials(api::credentials::Email{username, password});
 
     using DeviceGetStatusType = mf::api::device::get_status::Request;
     using DeviceGetChangesType = mf::api::device::get_changes::Request;
     using FolderGetInfoType = mf::api::folder::get_info::Request;
     using FileGetInfoType = mf::api::file::get_info::Request;
 
-    using PollChangesType = mf::api::PollChanges<DeviceGetStatusType,
-                                                 DeviceGetChangesType,
-                                                 FolderGetInfoType,
-                                                 FileGetInfoType>;
+    using PollChangesType
+            = mf::api::PollChanges<DeviceGetStatusType, DeviceGetChangesType,
+                                   FolderGetInfoType, FileGetInfoType>;
 
     // Response types
     using File = typename PollChangesType::File;
@@ -90,14 +88,30 @@ BOOST_AUTO_TEST_CASE(UTPollChanges)
 
         for (const auto & updated_file_info : updated_files_info)
         {
-            std::cout << "Updated File Info: " << updated_file_info.quickkey
-                      << std::endl;
+            if (updated_file_info.response_data)
+            {
+                const auto & data = *updated_file_info.response_data;
+                std::cout << "Updated File Info: " << data.quickkey
+                          << std::endl;
+            }
+            else
+            {
+                std::cout << "Updated File Info: Missing data!" << std::endl;
+            }
         }
 
         for (const auto & updated_folder_info : updated_folders_info)
         {
-            std::cout << "Updated Folder Info: "
-                      << updated_folder_info.folderkey << std::endl;
+            if (updated_folder_info.response_data)
+            {
+                const auto & data = *updated_folder_info.response_data;
+                std::cout << "Updated Folder Info: " << data.folderkey
+                          << std::endl;
+            }
+            else
+            {
+                std::cout << "Updated Folder Info: Missing data!" << std::endl;
+            }
         }
 
         for (const auto & deleted_file : deleted_files)
@@ -116,8 +130,8 @@ BOOST_AUTO_TEST_CASE(UTPollChanges)
 
     auto work_manager = mf::api::WorkManager::Create(&io_service);
 
-    auto poll_changes = PollChangesType::Create(
-            &stm, 0, work_manager, std::move(HandlePollChanges));
+    auto poll_changes = PollChangesType::Create(&stm, 0, work_manager,
+                                                std::move(HandlePollChanges));
     poll_changes->Start();
 
     io_service.run();

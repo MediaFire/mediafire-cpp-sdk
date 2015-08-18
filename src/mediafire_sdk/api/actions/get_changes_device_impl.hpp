@@ -64,7 +64,7 @@ void GetChangesDevice<TDeviceGetStatusRequest,
             HandleDeviceGetStatus =
                     [this, self](const DeviceGetStatusResponseType & response)
     {
-        if (response.error_code)
+        if (!response.response_data)
         {
             // If there was an error, insert into vector and
             // propagate at the callback.
@@ -77,7 +77,7 @@ void GetChangesDevice<TDeviceGetStatusRequest,
         }
         else
         {
-            latest_device_revision_ = response.device_revision;
+            latest_device_revision_ = response.response_data->device_revision;
         }
 
         request_ = nullptr;  // Must free request_ or coroutine cannot be
@@ -103,7 +103,7 @@ void GetChangesDevice<TDeviceGetStatusRequest,
                 HandleDeviceGetChanges = [this, self, start_revision](
                         const DeviceGetChangesResponseType & response)
         {
-            if (response.error_code)
+            if (!response.response_data)
             {
                 // If there was an error, insert
                 // into vector and
@@ -117,18 +117,20 @@ void GetChangesDevice<TDeviceGetStatusRequest,
             }
             else
             {
+                const auto & data = *response.response_data;
+
                 updated_files_.insert(std::end(updated_files_),
-                                      std::begin(response.updated_files),
-                                      std::end(response.updated_files));
+                                      std::begin(data.updated_files),
+                                      std::end(data.updated_files));
                 updated_folders_.insert(std::end(updated_folders_),
-                                        std::begin(response.updated_folders),
-                                        std::end(response.updated_folders));
+                                        std::begin(data.updated_folders),
+                                        std::end(data.updated_folders));
                 deleted_files_.insert(std::end(deleted_files_),
-                                      std::begin(response.deleted_files),
-                                      std::end(response.deleted_files));
+                                      std::begin(data.deleted_files),
+                                      std::end(data.deleted_files));
                 deleted_folders_.insert(std::end(deleted_folders_),
-                                        std::begin(response.deleted_folders),
-                                        std::end(response.deleted_folders));
+                                        std::begin(data.deleted_folders),
+                                        std::end(data.deleted_folders));
             }
 
             request_ = nullptr;  // Must free request_ or coroutine cannot be
@@ -138,7 +140,7 @@ void GetChangesDevice<TDeviceGetStatusRequest,
         };
 
         request_ = stm_->Call(DeviceGetChangesRequestType(start_revision),
-                   HandleDeviceGetChanges);
+                              HandleDeviceGetChanges);
 
         if (cancelled_)
             request_->Cancel();
@@ -151,12 +153,8 @@ void GetChangesDevice<TDeviceGetStatusRequest,
     }
 
     // Coroutine is done, so call the callback.
-    callback_(latest_device_revision_,
-              updated_files_,
-              updated_folders_,
-              deleted_files_,
-              deleted_folders_,
-              get_status_errors_,
+    callback_(latest_device_revision_, updated_files_, updated_folders_,
+              deleted_files_, deleted_folders_, get_status_errors_,
               get_changes_errors_);
 }
 

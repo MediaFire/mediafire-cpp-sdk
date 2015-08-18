@@ -72,11 +72,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_array TArray
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.viewable.extensions");
-        response->viewable_extensions.reserve( branch.size() );
+        response_data_ptr->viewable_extensions.reserve( branch.size() );
         if (branch.empty())
         {
             return_error(
@@ -90,7 +95,7 @@ void Impl::ParseResponse( Response * response )
                     it.second,
                     &result ) )
             {
-                response->viewable_extensions.push_back(result);
+                response_data_ptr->viewable_extensions.push_back(result);
             }
             else
             {
@@ -108,6 +113,9 @@ void Impl::ParseResponse( Response * response )
             mf::api::api_code::ContentInvalidData,
             "missing \"response.viewable.extensions\"");
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

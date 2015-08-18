@@ -27,7 +27,7 @@ namespace {
 using namespace v0;  // NOLINT
 bool UpdateFromPropertyBranch(
         Response * response,
-        Response::Update * value,
+        ResponseData::Update * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -156,11 +156,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.current_revision",
-            &response->current_revision ) )
+            &response_data_ptr->current_revision ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.current_revision\"");
@@ -169,20 +174,23 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.updates");
-        response->updates.reserve( response->pt.size() );
+        response_data_ptr->updates.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::Update optarg;
+            ResponseData::Update optarg;
             if ( UpdateFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->updates.push_back(std::move(optarg));
+                response_data_ptr->updates.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
     {
         // Is optional
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

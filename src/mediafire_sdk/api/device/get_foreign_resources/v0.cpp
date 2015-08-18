@@ -46,7 +46,7 @@ namespace {
 using namespace v0;  // NOLINT
 bool FileFromPropertyBranch(
         Response * response,
-        Response::File * value,
+        ResponseData::File * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -215,7 +215,7 @@ bool FileFromPropertyBranch(
 using namespace v0;  // NOLINT
 bool FolderFromPropertyBranch(
         Response * response,
-        Response::Folder * value,
+        ResponseData::Folder * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -431,18 +431,23 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_struct_parse TArray
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.files");
-        response->files.reserve( response->pt.size() );
+        response_data_ptr->files.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::File optarg;
+            ResponseData::File optarg;
             if ( FileFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->files.push_back(std::move(optarg));
+                response_data_ptr->files.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
@@ -454,20 +459,23 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.folders");
-        response->folders.reserve( response->pt.size() );
+        response_data_ptr->folders.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::Folder optarg;
+            ResponseData::Folder optarg;
             if ( FolderFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->folders.push_back(std::move(optarg));
+                response_data_ptr->folders.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
     {
         // Is optional
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

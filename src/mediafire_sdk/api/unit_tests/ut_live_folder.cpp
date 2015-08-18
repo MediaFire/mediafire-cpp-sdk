@@ -7,7 +7,7 @@
 #include "ut_live.hpp"
 
 #ifndef OUTPUT_DEBUG
-#  define OUTPUT_DEBUG
+#define OUTPUT_DEBUG
 #endif
 
 #include "mediafire_sdk/api/folder/copy.hpp"
@@ -28,78 +28,75 @@
 
 namespace api = mf::api;
 
-BOOST_FIXTURE_TEST_SUITE( s, ut::Fixture )
+BOOST_FIXTURE_TEST_SUITE(s, ut::Fixture)
 
 BOOST_AUTO_TEST_CASE(FolderGetContentLive)
 {
     api::folder::get_content::Request get_content(
-        "myfiles",  // folder_key
-        0,  // chunk
-        api::folder::get_content::ContentType::Files  // content_type
-    );
+            "myfiles",                                    // folder_key
+            0,                                            // chunk
+            api::folder::get_content::ContentType::Files  // content_type
+            );
 
-    Call(
-        get_content,
-        [&](const api::folder::get_content::Response & response)
-        {
-            Stop();
+    Call(get_content, [&](const api::folder::get_content::Response & response)
+         {
+             Stop();
 
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                Success();
-            }
-        });
+             if (response.error_code)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 Success();
+             }
+         });
 
     StartWithDefaultTimeout();
 }
 
 BOOST_AUTO_TEST_CASE(FolderGetInfoMyFilesBlank)
 {
-    Call(
-        api::folder::get_info::Request(""),
-        [&](const api::folder::get_info::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                Success();
+    Call(api::folder::get_info::Request(""),
+         [&](const api::folder::get_info::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
 
-                BOOST_CHECK( ! response.folderkey.empty() );
-            }
-        });
+                 Success();
+
+                 BOOST_CHECK(!data.folderkey.empty());
+             }
+         });
 
     StartWithDefaultTimeout();
 }
 
 BOOST_AUTO_TEST_CASE(FolderGetInfoMyFilesExplicit)
 {
-    Call(
-        api::folder::get_info::Request("myfiles"),
-        [&](const api::folder::get_info::Response & response)
-        {
-            if ( response.error_code )
-            {
-                Fail(response);
-            }
-            else
-            {
-                Success();
+    Call(api::folder::get_info::Request("myfiles"),
+         [&](const api::folder::get_info::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
 
-                BOOST_CHECK( ! response.folderkey.empty() );
-            }
-        });
+                 Success();
+
+                 BOOST_CHECK(!data.folderkey.empty());
+             }
+         });
 
     StartWithDefaultTimeout();
 }
-
-
-
 
 BOOST_AUTO_TEST_SUITE_END()

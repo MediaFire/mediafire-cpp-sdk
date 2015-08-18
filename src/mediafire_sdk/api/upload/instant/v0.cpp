@@ -108,11 +108,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.quickkey",
-            &response->quickkey ) )
+            &response_data_ptr->quickkey ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.quickkey\"");
@@ -121,10 +126,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.filename",
-            &response->filename ) )
+            &response_data_ptr->filename ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.filename\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

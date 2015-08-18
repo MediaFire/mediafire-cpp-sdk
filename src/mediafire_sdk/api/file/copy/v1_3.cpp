@@ -81,6 +81,11 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single optional no default
     {
         uint32_t optarg;
@@ -89,7 +94,7 @@ void Impl::ParseResponse( Response * response )
                 "response.new_device_revision",
                 &optarg) )
         {
-            response->new_device_revision = optarg;
+            response_data_ptr->new_device_revision = optarg;
         }
     }
 
@@ -97,10 +102,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExistsArrayFront(
             response->pt,
             "response.new_quickkeys",
-            &response->quickkey ) )
+            &response_data_ptr->quickkey ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.new_quickkeys\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

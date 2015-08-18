@@ -27,10 +27,12 @@ namespace user_register {
 namespace v1_3 {
 
 /**
- * @class Response
- * @brief Response from API request "user/register"
+ * @class ResponseData
+ * @brief Response data from API request "user/register"
+ *
+ * This data is only available if the API request was successful.
  */
-class Response : public ResponseBase
+class ResponseData
 {
 public:
     /** Email associated with the account */
@@ -45,6 +47,17 @@ public:
 
     /** Temporary password assigned when no password was provided. */
     boost::optional<std::string> temporary_password;
+};
+
+/**
+ * @class Response
+ * @brief Response from API request "user/register"
+ */
+class Response : public ResponseBase
+{
+public:
+    /** Parsed API response on successful parse. */
+    boost::optional<ResponseData> response_data;
 };
 
 class Impl;
@@ -110,7 +123,10 @@ public:
     // Remaining functions are for use by API library only. --------------------
 
     /** Requester/SessionMaintainer expected type. */
-    typedef Response ResponseType;
+    using ResponseType = Response;
+
+    /** Requester/SessionMaintainer expected type. */
+    using ResponseDataType = ResponseData;
 
     /** Requester/SessionMaintainer expected type. */
     typedef std::function< void( const ResponseType & data)> CallbackType;

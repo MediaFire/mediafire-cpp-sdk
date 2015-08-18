@@ -38,7 +38,7 @@ namespace {
 using namespace v1_3;  // NOLINT
 bool ResumableDataFromPropertyBranch(
         Response * response,
-        Response::ResumableData * value,
+        ResponseData::ResumableData * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -217,15 +217,20 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->hash_exists = HashAlreadyInSystem::No;
-    response->hash_in_account = HashAlreadyInAccount::HashNewToAccount;
-    response->hash_in_folder = HashAlreadyInFolder::HashNewToFolder;
-    response->file_exists = FilenameInFolder::No;
-    response->hash_different = FileExistsWithDifferentHash::No;
-    response->available_space = 0;
-    response->used_storage_size = 0;
-    response->storage_limit = 0;
-    response->storage_limit_exceeded = StorageLimitExceeded::No;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->hash_exists = HashAlreadyInSystem::No;
+    response_data_ptr->hash_in_account = HashAlreadyInAccount::HashNewToAccount;
+    response_data_ptr->hash_in_folder = HashAlreadyInFolder::HashNewToFolder;
+    response_data_ptr->file_exists = FilenameInFolder::No;
+    response_data_ptr->hash_different = FileExistsWithDifferentHash::No;
+    response_data_ptr->available_space = 0;
+    response_data_ptr->used_storage_size = 0;
+    response_data_ptr->storage_limit = 0;
+    response_data_ptr->storage_limit_exceeded = StorageLimitExceeded::No;
 
     {
         std::string optval;
@@ -236,9 +241,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->hash_exists = HashAlreadyInSystem::No;
+                response_data_ptr->hash_exists = HashAlreadyInSystem::No;
             else if ( optval == "yes" )
-                response->hash_exists = HashAlreadyInSystem::Yes;
+                response_data_ptr->hash_exists = HashAlreadyInSystem::Yes;
         }
     }
 
@@ -251,9 +256,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->hash_in_account = HashAlreadyInAccount::HashNewToAccount;
+                response_data_ptr->hash_in_account = HashAlreadyInAccount::HashNewToAccount;
             else if ( optval == "yes" )
-                response->hash_in_account = HashAlreadyInAccount::HashExistsInAccount;
+                response_data_ptr->hash_in_account = HashAlreadyInAccount::HashExistsInAccount;
         }
     }
 
@@ -266,9 +271,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->hash_in_folder = HashAlreadyInFolder::HashNewToFolder;
+                response_data_ptr->hash_in_folder = HashAlreadyInFolder::HashNewToFolder;
             else if ( optval == "yes" )
-                response->hash_in_folder = HashAlreadyInFolder::HashExistsInFolder;
+                response_data_ptr->hash_in_folder = HashAlreadyInFolder::HashExistsInFolder;
         }
     }
 
@@ -281,9 +286,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->file_exists = FilenameInFolder::No;
+                response_data_ptr->file_exists = FilenameInFolder::No;
             else if ( optval == "yes" )
-                response->file_exists = FilenameInFolder::Yes;
+                response_data_ptr->file_exists = FilenameInFolder::Yes;
         }
     }
 
@@ -296,9 +301,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->hash_different = FileExistsWithDifferentHash::No;
+                response_data_ptr->hash_different = FileExistsWithDifferentHash::No;
             else if ( optval == "yes" )
-                response->hash_different = FileExistsWithDifferentHash::Yes;
+                response_data_ptr->hash_different = FileExistsWithDifferentHash::Yes;
         }
     }
 
@@ -310,7 +315,7 @@ void Impl::ParseResponse( Response * response )
                 "response.duplicate_quickkey",
                 &optarg) )
         {
-            response->duplicate_quickkey = optarg;
+            response_data_ptr->duplicate_quickkey = optarg;
         }
     }
 
@@ -318,19 +323,19 @@ void Impl::ParseResponse( Response * response )
     GetIfExists(
             response->pt,
             "response.available_space",
-            &response->available_space);
+            &response_data_ptr->available_space);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.used_storage_size",
-            &response->used_storage_size);
+            &response_data_ptr->used_storage_size);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.storage_limit",
-            &response->storage_limit);
+            &response_data_ptr->storage_limit);
 
     {
         std::string optval;
@@ -341,9 +346,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "no" )
-                response->storage_limit_exceeded = StorageLimitExceeded::No;
+                response_data_ptr->storage_limit_exceeded = StorageLimitExceeded::No;
             else if ( optval == "yes" )
-                response->storage_limit_exceeded = StorageLimitExceeded::Yes;
+                response_data_ptr->storage_limit_exceeded = StorageLimitExceeded::Yes;
         }
     }
 
@@ -352,17 +357,20 @@ void Impl::ParseResponse( Response * response )
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.resumable_upload");
 
-        Response::ResumableData optarg;
+        ResponseData::ResumableData optarg;
         if ( ResumableDataFromPropertyBranch(
                 response, &optarg, branch) )
         {
-            response->resumable = std::move(optarg);
+            response_data_ptr->resumable = std::move(optarg);
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
     {
         // Is optional
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

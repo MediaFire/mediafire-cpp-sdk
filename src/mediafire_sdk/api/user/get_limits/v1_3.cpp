@@ -73,97 +73,105 @@ void Impl::ParseResponse( Response * response )
         SetError(response, error_type, error_message);                         \
         return;                                                                \
     }
-    response->storage_base = 0;
-    response->storage_bonus = 0;
-    response->storage_limit = 0;
-    response->storage_used = 0;
-    response->bandwidth_limit = 0;
-    response->bandwidth_used = 0;
-    response->collaboration_limit = 0;
-    response->collaboration_today = 0;
-    response->one_time_downloads_limit = 0;
-    response->one_time_downloads_today = 0;
-    response->streaming_bandwidth_limit = 0;
-    response->streaming_bandwidth_today = 0;
-    response->upload_size_limit = 0;
+
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+    response_data_ptr->storage_base = 0;
+    response_data_ptr->storage_bonus = 0;
+    response_data_ptr->storage_limit = 0;
+    response_data_ptr->storage_used = 0;
+    response_data_ptr->bandwidth_limit = 0;
+    response_data_ptr->bandwidth_used = 0;
+    response_data_ptr->collaboration_limit = 0;
+    response_data_ptr->collaboration_today = 0;
+    response_data_ptr->one_time_downloads_limit = 0;
+    response_data_ptr->one_time_downloads_today = 0;
+    response_data_ptr->streaming_bandwidth_limit = 0;
+    response_data_ptr->streaming_bandwidth_today = 0;
+    response_data_ptr->upload_size_limit = 0;
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.storage_base",
-            &response->storage_base);
+            &response_data_ptr->storage_base);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.storage_bonus",
-            &response->storage_bonus);
+            &response_data_ptr->storage_bonus);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.storage_limit",
-            &response->storage_limit);
+            &response_data_ptr->storage_limit);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.storage_used",
-            &response->storage_used);
+            &response_data_ptr->storage_used);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.bandwidth_limit",
-            &response->bandwidth_limit);
+            &response_data_ptr->bandwidth_limit);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.bandwidth_used",
-            &response->bandwidth_used);
+            &response_data_ptr->bandwidth_used);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.collaboration_limit",
-            &response->collaboration_limit);
+            &response_data_ptr->collaboration_limit);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.collaboration_today",
-            &response->collaboration_today);
+            &response_data_ptr->collaboration_today);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.one_time_downloads_limit",
-            &response->one_time_downloads_limit);
+            &response_data_ptr->one_time_downloads_limit);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.one_time_downloads_today",
-            &response->one_time_downloads_today);
+            &response_data_ptr->one_time_downloads_today);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.streaming_bandwidth_limit",
-            &response->streaming_bandwidth_limit);
+            &response_data_ptr->streaming_bandwidth_limit);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.streaming_bandwidth_today",
-            &response->streaming_bandwidth_today);
+            &response_data_ptr->streaming_bandwidth_today);
 
     // create_content_parse_single optional with default
     GetIfExists(
             response->pt,
             "response.upload_size_limit",
-            &response->upload_size_limit);
+            &response_data_ptr->upload_size_limit);
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

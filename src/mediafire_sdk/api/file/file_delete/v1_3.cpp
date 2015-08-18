@@ -80,6 +80,11 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single optional no default
     {
         uint32_t optarg;
@@ -88,9 +93,12 @@ void Impl::ParseResponse( Response * response )
                 "response.new_device_revision",
                 &optarg) )
         {
-            response->new_device_revision = optarg;
+            response_data_ptr->new_device_revision = optarg;
         }
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

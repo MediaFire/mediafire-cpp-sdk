@@ -81,6 +81,7 @@ void Impl::ParseResponse( Response * /* response */ )
     }
 
 
+
 #   undef return_error
 }
 

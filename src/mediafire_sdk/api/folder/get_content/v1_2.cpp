@@ -68,7 +68,7 @@ namespace {
 using namespace v1_2;  // NOLINT
 bool LinksFromPropertyBranch(
         Response * response,
-        Response::Links * value,
+        ResponseData::Links * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -151,7 +151,7 @@ bool LinksFromPropertyBranch(
 using namespace v1_2;  // NOLINT
 bool PermissionsFromPropertyBranch(
         Response * response,
-        Response::Permissions * value,
+        ResponseData::Permissions * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -252,7 +252,7 @@ bool PermissionsFromPropertyBranch(
 using namespace v1_2;  // NOLINT
 bool FileFromPropertyBranch(
         Response * response,
-        Response::File * value,
+        ResponseData::File * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -357,7 +357,7 @@ bool FileFromPropertyBranch(
         const boost::property_tree::wptree & branch =
             pt.get_child(L"links");
 
-        Response::Links optarg;
+        ResponseData::Links optarg;
         if ( LinksFromPropertyBranch(
                 response, &optarg, branch) )
         {
@@ -415,7 +415,7 @@ bool FileFromPropertyBranch(
         const boost::property_tree::wptree & branch =
             pt.get_child(L"permissions");
 
-        Response::Permissions optarg;
+        ResponseData::Permissions optarg;
         if ( PermissionsFromPropertyBranch(
                 response, &optarg, branch) )
         {
@@ -515,7 +515,7 @@ bool FileFromPropertyBranch(
 using namespace v1_2;  // NOLINT
 bool FolderFromPropertyBranch(
         Response * response,
-        Response::Folder * value,
+        ResponseData::Folder * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -633,7 +633,7 @@ bool FolderFromPropertyBranch(
         const boost::property_tree::wptree & branch =
             pt.get_child(L"permissions");
 
-        Response::Permissions optarg;
+        ResponseData::Permissions optarg;
         if ( PermissionsFromPropertyBranch(
                 response, &optarg, branch) )
         {
@@ -833,11 +833,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.folder_content.chunk_size",
-            &response->chunk_size ) )
+            &response_data_ptr->chunk_size ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.folder_content.chunk_size\"");
@@ -851,9 +856,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "folders" )
-                response->content_type = ContentType::Folders;
+                response_data_ptr->content_type = ContentType::Folders;
             else if ( optval == "files" )
-                response->content_type = ContentType::Files;
+                response_data_ptr->content_type = ContentType::Files;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -869,7 +874,7 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.folder_content.chunk_number",
-            &response->chunk_number ) )
+            &response_data_ptr->chunk_number ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.folder_content.chunk_number\"");
@@ -883,9 +888,9 @@ void Impl::ParseResponse( Response * response )
                 &optval) )
         {
             if ( optval == "yes" )
-                response->chunks_remaining = ChunksRemaining::MoreChunks;
+                response_data_ptr->chunks_remaining = ChunksRemaining::MoreChunks;
             else if ( optval == "no" )
-                response->chunks_remaining = ChunksRemaining::LastChunk;
+                response_data_ptr->chunks_remaining = ChunksRemaining::LastChunk;
             else
                 return_error(
                     mf::api::api_code::ContentInvalidData,
@@ -901,14 +906,14 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.folder_content.files");
-        response->files.reserve( response->pt.size() );
+        response_data_ptr->files.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::File optarg;
+            ResponseData::File optarg;
             if ( FileFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->files.push_back(std::move(optarg));
+                response_data_ptr->files.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
@@ -920,20 +925,23 @@ void Impl::ParseResponse( Response * response )
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.folder_content.folders");
-        response->folders.reserve( response->pt.size() );
+        response_data_ptr->folders.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::Folder optarg;
+            ResponseData::Folder optarg;
             if ( FolderFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->folders.push_back(std::move(optarg));
+                response_data_ptr->folders.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
     {
         // Is optional
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

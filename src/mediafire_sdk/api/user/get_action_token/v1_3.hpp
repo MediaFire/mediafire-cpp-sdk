@@ -35,14 +35,27 @@ enum class Type
 };
 
 /**
+ * @class ResponseData
+ * @brief Response data from API request "user/get_action_token"
+ *
+ * This data is only available if the API request was successful.
+ */
+class ResponseData
+{
+public:
+    /** API response field "response.action_token" */
+    std::string action_token;
+};
+
+/**
  * @class Response
  * @brief Response from API request "user/get_action_token"
  */
 class Response : public ResponseBase
 {
 public:
-    /** API response field "response.action_token" */
-    std::string action_token;
+    /** Parsed API response on successful parse. */
+    boost::optional<ResponseData> response_data;
 };
 
 class Impl;
@@ -78,7 +91,10 @@ public:
     // Remaining functions are for use by API library only. --------------------
 
     /** Requester/SessionMaintainer expected type. */
-    typedef Response ResponseType;
+    using ResponseType = Response;
+
+    /** Requester/SessionMaintainer expected type. */
+    using ResponseDataType = ResponseData;
 
     /** Requester/SessionMaintainer expected type. */
     typedef std::function< void( const ResponseType & data)> CallbackType;

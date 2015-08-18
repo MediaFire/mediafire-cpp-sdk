@@ -72,11 +72,16 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
             "response.database",
-            &response->database ) )
+            &response_data_ptr->database ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.database\"");
@@ -85,10 +90,13 @@ void Impl::ParseResponse( Response * response )
     if ( ! GetIfExists(
             response->pt,
             "response.memcache",
-            &response->memcache ) )
+            &response_data_ptr->memcache ) )
         return_error(
             mf::api::api_code::ContentInvalidData,
             "missing \"response.memcache\"");
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }

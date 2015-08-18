@@ -27,7 +27,7 @@ namespace {
 using namespace v0;  // NOLINT
 bool ShareFromPropertyBranch(
         Response * response,
-        Response::Share * value,
+        ResponseData::Share * value,
         const boost::property_tree::wptree & pt
     )
 {
@@ -187,24 +187,32 @@ void Impl::ParseResponse( Response * response )
         return;                                                                \
     }
 
+    ResponseData response_data;
+
+    // For uniformity for code generation with the other content parsers.
+    ResponseData * response_data_ptr = &response_data;
+
     // create_content_struct_parse TArray
     try {
         const boost::property_tree::wptree & branch =
             response->pt.get_child(L"response.shares");
-        response->shares.reserve( response->pt.size() );
+        response_data_ptr->shares.reserve( response->pt.size() );
 
         for ( auto & it : branch )
         {
-            Response::Share optarg;
+            ResponseData::Share optarg;
             if ( ShareFromPropertyBranch(
                     response, &optarg, it.second) )
-                response->shares.push_back(std::move(optarg));
+                response_data_ptr->shares.push_back(std::move(optarg));
         }
     }
     catch(boost::property_tree::ptree_bad_path & err)
     {
         // Is optional
     }
+
+    // Only on success, return parsed data structure with response
+    response->response_data = std::move(response_data); 
 
 #   undef return_error
 }
