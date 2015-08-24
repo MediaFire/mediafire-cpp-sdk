@@ -151,6 +151,7 @@ private:
             STRequestWeak weak_request
         );
 
+    std::string GetDebugOutputTokenCounts();
     void DebugOutputTokenCounts();
 
     class NewStateVisitor;
