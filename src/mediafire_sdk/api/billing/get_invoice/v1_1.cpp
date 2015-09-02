@@ -323,15 +323,6 @@ void Impl::ParseResponse( Response * response )
     // create_content_parse_single required
     if ( ! GetIfExists(
             response->pt,
-            "response.invoice.invoice_id",
-            &response_data_ptr->invoice_id ) )
-        return_error(
-            mf::api::api_code::ContentInvalidData,
-            "missing \"response.invoice.invoice_id\"");
-
-    // create_content_parse_single required
-    if ( ! GetIfExists(
-            response->pt,
             "response.invoice.invoice_num",
             &response_data_ptr->invoice_num ) )
         return_error(
@@ -356,14 +347,17 @@ void Impl::ParseResponse( Response * response )
             mf::api::api_code::ContentInvalidData,
             "missing \"response.invoice.recurring_status\"");
 
-    // create_content_parse_single required
-    if ( ! GetIfExists(
-            response->pt,
-            "response.invoice.recurring_profile_id",
-            &response_data_ptr->recurring_profile_id ) )
-        return_error(
-            mf::api::api_code::ContentInvalidData,
-            "missing \"response.invoice.recurring_profile_id\"");
+    // create_content_parse_single optional no default
+    {
+        uint32_t optarg;
+        if ( GetIfExists(
+                response->pt,
+                "response.invoice.recurring_profile_id",
+                &optarg) )
+        {
+            response_data_ptr->recurring_profile_id = optarg;
+        }
+    }
 
     // create_content_parse_single required
     if ( ! GetIfExists(
@@ -497,14 +491,17 @@ void Impl::ParseResponse( Response * response )
         }
     }
 
-    // create_content_parse_single required
-    if ( ! GetIfExists(
-            response->pt,
-            "response.invoice.promo_code",
-            &response_data_ptr->promo_code ) )
-        return_error(
-            mf::api::api_code::ContentInvalidData,
-            "missing \"response.invoice.promo_code\"");
+    // create_content_parse_single optional no default
+    {
+        std::string optarg;
+        if ( GetIfExists(
+                response->pt,
+                "response.invoice.promo_code",
+                &optarg) )
+        {
+            response_data_ptr->promo_code = optarg;
+        }
+    }
 
     // create_content_struct_parse TSingle
     try {

@@ -158,9 +158,6 @@ public:
         /** API response field "base_storage" */
         uint64_t base_storage;
     };
-    /** API response field "response.invoice.invoice_id" */
-    uint32_t invoice_id;
-
     /** API response field "response.invoice.invoice_num" */
     std::string invoice_num;
 
@@ -171,7 +168,7 @@ public:
     std::string recurring_status;
 
     /** API response field "response.invoice.recurring_profile_id" */
-    uint32_t recurring_profile_id;
+    boost::optional<uint32_t> recurring_profile_id;
 
     /** API response field "response.invoice.date_created" */
     boost::posix_time::ptime created_datetime;
@@ -219,7 +216,7 @@ public:
     boost::optional<uint32_t> previous_invoice_id;
 
     /** API response field "response.invoice.promo_code" */
-    std::string promo_code;
+    boost::optional<std::string> promo_code;
 
     /** API response field "response.invoice.product" */
     Product product;

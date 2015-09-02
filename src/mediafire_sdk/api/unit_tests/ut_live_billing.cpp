@@ -10,8 +10,9 @@
 #define OUTPUT_DEBUG
 #endif
 
-#include "mediafire_sdk/api/billing/get_products.hpp"
+#include "mediafire_sdk/api/billing/get_invoice.hpp"
 #include "mediafire_sdk/api/billing/get_plans.hpp"
+#include "mediafire_sdk/api/billing/get_products.hpp"
 
 #ifdef BOOST_ASIO_SEPARATE_COMPILATION
 #include "boost/asio/impl/src.hpp"      // Define once in program
@@ -73,7 +74,7 @@ BOOST_AUTO_TEST_CASE(GetBillingPlans)
                  BOOST_CHECK(!data.plans.empty());
 
                  for (const api::billing::get_plans::ResponseData::Plan & it :
-                      data.plans)
+                          data.plans)
                  {
                      BOOST_CHECK(!it.description.empty());
                  }
@@ -82,5 +83,32 @@ BOOST_AUTO_TEST_CASE(GetBillingPlans)
 
     StartWithDefaultTimeout();
 }
+
+// This is not enabled by default as the test accounts will normally not be Pro
+// accounts with invoices.
+#if 0
+BOOST_AUTO_TEST_CASE(GetInvoice)
+{
+    ChangeCredentials(
+            api::credentials::Email{"account with invoice", "PASSWORD"});
+
+    Call(api::billing::get_invoice::Request(),
+         [&](const api::billing::get_invoice::Response & response)
+         {
+             if (!response.response_data)
+             {
+                 Fail(response);
+             }
+             else
+             {
+                 const auto & data = *response.response_data;
+
+                 Success();
+             }
+         });
+
+    StartWithDefaultTimeout();
+}
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()
