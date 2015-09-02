@@ -53,7 +53,7 @@ void Impl::BuildUrl(
     *path = api_path + ".php";__URL_CREATION__
 }
 
-void Impl::ParseResponse( Response * __PR_OPT_ADT__ )
+void Impl::ParseResponse( Response * response )
 {
     // This function uses return defines for readability and maintainability.
 #   define return_error(error_type, error_message)                             \
