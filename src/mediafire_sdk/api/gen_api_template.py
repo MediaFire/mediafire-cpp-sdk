@@ -1574,14 +1574,18 @@ def get_content_parsing(api):
 """
 
     if 'return_params' in api:
-        ret = ret + content_parse_branch(api, 'response_data_ptr', 'response->pt',
-                                         api['return_params'])
+        ret = ret + content_parse_branch(api, 'response_data_ptr',
+                                         'response->pt', api['return_params'])
 
     if has_content_to_return(api) == True:
         ret = ret + """
 
     // Only on success, return parsed data structure with response
     response->response_data = std::move(response_data);"""
+    else:
+        ret = ret + """\
+    // Always have response_data on success.
+    response->response_data = ResponseData();"""
 
     return ret
 
@@ -1633,7 +1637,8 @@ def get_hpp_namespaced_enums(api):
         return ''
     ret = []
     for (enum_cpp_name, enum_members) in parse_enum_params(api['enums']):
-        ret.append('    using ' + enum_cpp_name + ' = enum ' + enum_cpp_name + ';')
+        ret.append('    using ' + enum_cpp_name + ' = enum ' + enum_cpp_name +
+                   ';')
     comment = '\n    // Enums in class namespace for usage with templates\n'
     return comment + '\n'.join(ret) + '\n\n'
 
