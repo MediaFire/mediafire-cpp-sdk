@@ -309,14 +309,44 @@ void HandleContentRead(
         eof = true;
     }
 
-    if ( !err || eof )
+    const std::size_t total_read = total_previously_read + bytes_to_process;
+
+    // Even if there was an error, we continue like there wasn't if we have read
+    // all the expected data.
+    const bool read_complete = (state_data->using_content_length
+                                && state_data->content_length == total_read)
+                               || eof;
+
+    // Fail if content length incorrect on read complete
+    if (read_complete && state_data->using_content_length
+        && state_data->content_length < total_read)
     {
-        bool read_complete = false;
+        std::stringstream ss;
+        ss << "Failure while reading content.";
+        ss << " Url: " << fsm.get_url();
+        ss << " Error: Exceeded content length.";
+        ss << " Total read: " << total_read;
+        ss << " Content length: " << state_data->content_length;
 
-        const std::size_t total_read =
-            total_previously_read + bytes_to_process;
-
-        if ( ! state_data->using_gzip )
+        fsm.ProcessEvent(
+                ErrorEvent{make_error_code(http_error::ReadFailure), ss.str()});
+    }
+    else if (!read_complete && err)  // handle error
+    {
+        std::stringstream ss;
+        ss << "Failure while reading content.";
+        ss << " Url: " << fsm.get_url();
+        ss << " Error: " << err.message();
+        fsm.ProcessEvent(
+                ErrorEvent{
+                    make_error_code(
+                            http_error::ReadFailure ),
+                        ss.str()
+                        });
+    }
+    else  // handle successful read
+    {
+        if (!state_data->using_gzip)
         {
             // Non gzip buffer passing.
             std::istream post_data_stream(state_data->read_buffer.get());
@@ -340,36 +370,38 @@ void HandleContentRead(
                 );
         }
 
-        // Also handle content-length.
-        if ( state_data->using_content_length )
+        if (!read_complete)  // Handle more data
         {
-            if ( state_data->content_length == total_read )
+            uint64_t max_read_size = kMaxUnknownReadLength;
+            if (state_data->using_content_length)
             {
-                read_complete = true;
+                max_read_size
+                        = std::min(state_data->content_length - total_read,
+                                   kMaxUnknownReadLength);
             }
-            else if ( state_data->content_length < total_read )
-            {
-                std::stringstream ss;
-                ss << "Failure while reading content.";
-                ss << " Url: " << fsm.get_url();
-                ss << " Error: Exceeded content length.";
-                ss << " Total read: " << total_read;
-                ss << " Content length: "
-                   << state_data->content_length;
 
-                fsm.ProcessEvent(
-                    ErrorEvent{
-                        make_error_code(
-                            http_error::ReadFailure ),
-                        ss.str()
-                    });
-                return;
-            }
+            auto fsmp = fsm.AsFrontShared();
+
+            // Delay behavior:
+            fsm.SetTransactionDelayTimer(start_time, sclock::now());
+
+            fsm.get_transmission_delay_timer()->async_wait(
+                    fsm.get_event_strand()->wrap(
+                            [fsmp, state_data, max_read_size, total_read](
+                                    const boost::system::error_code & ec)
+                            {
+                                fsmp->SetTransactionDelayTimerWrapper(
+                                        [fsmp, state_data, max_read_size,
+                                         total_read]()
+                                        {
+                                            HandleContentReadDelayCallback(
+                                                    *fsmp, state_data,
+                                                    max_read_size, total_read);
+                                        },
+                                        ec);
+                            }));
         }
-        else if ( eof )
-            read_complete = true;
-
-        if ( read_complete )
+        else  // Handle complete data
         {
             if ( state_data->using_gzip )
             {
@@ -417,51 +449,6 @@ void HandleContentRead(
 
             fsm.ProcessEvent(ContentReadEvent{});
         }
-        else
-        {
-            uint64_t max_read_size = kMaxUnknownReadLength;
-            if ( state_data->using_content_length )
-            {
-                max_read_size = std::min(
-                        state_data->content_length - total_read,
-                        kMaxUnknownReadLength
-                    );
-            }
-
-            auto fsmp = fsm.AsFrontShared();
-
-            // Delay behavior:
-            fsm.SetTransactionDelayTimer( start_time, sclock::now() );
-
-            fsm.get_transmission_delay_timer()->async_wait(
-                fsm.get_event_strand()->wrap(
-                    [fsmp, state_data, max_read_size, total_read](
-                            const boost::system::error_code& ec
-                        )
-                    {
-                        fsmp->SetTransactionDelayTimerWrapper(
-                            [fsmp, state_data, max_read_size, total_read]()
-                            {
-                                HandleContentReadDelayCallback( *fsmp,
-                                    state_data, max_read_size, total_read);
-                            },
-                            ec
-                            );
-                    }));
-        }
-    }
-    else
-    {
-        std::stringstream ss;
-        ss << "Failure while reading content.";
-        ss << " Url: " << fsm.get_url();
-        ss << " Error: " << err.message();
-        fsm.ProcessEvent(
-            ErrorEvent{
-                make_error_code(
-                    http_error::ReadFailure ),
-                ss.str()
-            });
     }
 }
 
