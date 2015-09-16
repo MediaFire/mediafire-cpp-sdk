@@ -297,29 +297,22 @@ void HandleContentRead(
             bytes_previously_transferred, start_time, sclock::now() );
     }
 
-    bool eof = false;
-
-    if ( err == asio::error::eof )
-    {
-        eof = true;
-    }
-    else if ( fsm.get_is_ssl() && IsSslShortRead(err) )
-    {
-        // SSL doesn't return EOF when it ends.
-        eof = true;
-    }
-
     const std::size_t total_read = total_previously_read + bytes_to_process;
 
-    // Even if there was an error, we continue like there wasn't if we have read
-    // all the expected data.
-    const bool read_complete = (state_data->using_content_length
-                                && state_data->content_length == total_read)
-                               || eof;
+    const bool connection_terminated = static_cast<bool>(err);
+    const bool connection_terminated_cleanly = (err == asio::error::eof);
+
+    const bool using_content_length
+        = state_data->using_content_length;
+
+    const bool reached_full_content
+            = using_content_length && state_data->content_length == total_read;
+
+    const bool exceeded_full_content
+            = using_content_length && state_data->content_length < total_read;
 
     // Fail if content length incorrect on read complete
-    if (read_complete && state_data->using_content_length
-        && state_data->content_length < total_read)
+    if (exceeded_full_content)
     {
         std::stringstream ss;
         ss << "Failure while reading content.";
@@ -330,22 +323,36 @@ void HandleContentRead(
 
         fsm.ProcessEvent(
                 ErrorEvent{make_error_code(http_error::ReadFailure), ss.str()});
+
+        assert(!"Content length exceeded in HandleContentRead.");
     }
-    else if (!read_complete && err)  // handle error
+    else if (connection_terminated && using_content_length
+             && !reached_full_content)
     {
         std::stringstream ss;
-        ss << "Failure while reading content.";
+        ss << "Early termination of content read.";
         ss << " Url: " << fsm.get_url();
         ss << " Error: " << err.message();
         fsm.ProcessEvent(
-                ErrorEvent{
-                    make_error_code(
-                            http_error::ReadFailure ),
-                        ss.str()
-                        });
+                ErrorEvent{make_error_code(http_error::ReadFailure), ss.str()});
     }
-    else  // handle successful read
+    else if (connection_terminated && !connection_terminated_cleanly
+             && !using_content_length)
     {
+        // If the connection wasn't terminated cleanly and we don't have the
+        // content length to rely on, then the transaction failed.
+        std::stringstream ss;
+        ss << "Connection failure.";
+        ss << " Url: " << fsm.get_url();
+        ss << " Error: " << err.message();
+        fsm.ProcessEvent(
+                ErrorEvent{make_error_code(http_error::ReadFailure), ss.str()});
+    }
+    else
+    {
+        // Either we are done reading, or have more to read at this point.
+
+        // Send data to client immediately if not using gzip.
         if (!state_data->using_gzip)
         {
             // Non gzip buffer passing.
@@ -370,8 +377,10 @@ void HandleContentRead(
                 );
         }
 
-        if (!read_complete)  // Handle more data
+        if (!connection_terminated && !reached_full_content)
         {
+            // There is more content to receive.
+
             uint64_t max_read_size = kMaxUnknownReadLength;
             if (state_data->using_content_length)
             {
@@ -401,8 +410,12 @@ void HandleContentRead(
                                         ec);
                             }));
         }
-        else  // Handle complete data
+        else
         {
+            // We have all the content.
+            assert(connection_terminated || reached_full_content);
+
+            // Unzip and send all data if using gzip now.
             if ( state_data->using_gzip )
             {
                 auto & filter_buffer = state_data->filter_buf;
@@ -428,7 +441,6 @@ void HandleContentRead(
                                 http_error::ReadFailure ),
                             ss.str()
                         });
-                    //assert(!"GZip compression error from content");
                     return;
                 }
 
@@ -447,6 +459,7 @@ void HandleContentRead(
                 state_data->filter_buf_consumed += return_buffer->buffer.size();
             }
 
+            // We are done receiving data from the remote source.
             fsm.ProcessEvent(ContentReadEvent{});
         }
     }
