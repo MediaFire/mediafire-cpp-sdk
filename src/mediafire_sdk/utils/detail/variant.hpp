@@ -21,6 +21,17 @@ namespace utils
 namespace detail
 {
 
+template <typename T>
+struct is_variant : public std::false_type
+{
+};
+
+template <BOOST_VARIANT_ENUM_PARAMS(typename T)>
+struct is_variant<boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)>>
+        : public std::true_type
+{
+};
+
 template <typename ReturnT, typename... Lambdas>
 struct lambda_visitor;
 
@@ -131,13 +142,15 @@ struct partial_recursive_lambda_visitor
     }
 
     // Non-matching events
-    template <typename T>
+    template <typename T,
+              typename std::enable_if<!is_variant<T>::value>::type * = nullptr>
     void operator()(const T &) const
     {
     }
 
-    template <typename... T>
-    void operator()(const boost::variant<T...> & variant) const
+    template <typename T,
+              typename std::enable_if<is_variant<T>::value>::type * = nullptr>
+    void operator()(const T & variant) const
     {
         return boost::apply_visitor(*this, variant);
     }
@@ -194,15 +207,16 @@ struct partial_recursive_lambda_visitor_with_default
     {
     }
 
-    // Non-matching events
-    template <typename T>
+    template <typename T,
+              typename std::enable_if<!is_variant<T>::value>::type * = nullptr>
     ResultT operator()(const T &) const
     {
         return default_result_;
     }
 
-    template <typename... T>
-    ResultT operator()(const boost::variant<T...> & variant) const
+    template <typename T,
+              typename std::enable_if<is_variant<T>::value>::type * = nullptr>
+    ResultT operator()(const T & variant) const
     {
         return boost::apply_visitor(*this, variant);
     }
