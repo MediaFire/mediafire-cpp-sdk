@@ -135,7 +135,8 @@ asio::ssl::verify_mode CertAllowToVerifyMode(hl::SelfSigned ss)
             return asio::ssl::verify_none;
         default:
             assert(!"Unknown SelfSigned type");
-            return asio::ssl::verify_peer;
+            return (asio::ssl::verify_peer |
+                asio::ssl::verify_fail_if_no_peer_cert);
     }
 }
 
