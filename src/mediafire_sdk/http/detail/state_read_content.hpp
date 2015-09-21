@@ -314,6 +314,8 @@ void HandleContentRead(
     // Fail if content length incorrect on read complete
     if (exceeded_full_content)
     {
+        // We have read more data than we requested, and more than the server
+        // told us to expect.
         std::stringstream ss;
         ss << "Failure while reading content.";
         ss << " Url: " << fsm.get_url();
@@ -329,6 +331,8 @@ void HandleContentRead(
     else if (connection_terminated && using_content_length
              && !reached_full_content)
     {
+        // The connection was terminated and we know we haven't read enough
+        // data yet.
         std::stringstream ss;
         ss << "Early termination of content read.";
         ss << " Url: " << fsm.get_url();
