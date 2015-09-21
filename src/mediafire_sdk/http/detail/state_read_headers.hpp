@@ -8,7 +8,10 @@
 
 #include <chrono>
 
+#include "boost/algorithm/string/case_conv.hpp"
+#include "boost/algorithm/string/find.hpp"
 #include "boost/algorithm/string/trim.hpp"
+#include "boost/lexical_cast.hpp"
 #include "boost/msm/front/state_machine_def.hpp"
 
 #include "mediafire_sdk/http/detail/http_request_events.hpp"
@@ -19,6 +22,8 @@
 namespace mf {
 namespace http {
 namespace detail {
+
+char const * const header_terminator = "\r\n\r\n";
 
 class ReadHeadersData
 {
@@ -59,22 +64,24 @@ void HandleHeaderRead(
             read_buffer->size(), start_time, sclock::now() );
     }
 
-    if (!err)
+    HeadersReadEvent evt;
     {
-        HeadersReadEvent evt;
-        {
-            // Copy headers.
+        // Copy headers.
 
-            asio::streambuf::const_buffers_type bufs =
-                read_buffer->data();
+        asio::streambuf::const_buffers_type bufs = read_buffer->data();
 
-            evt.raw_headers = std::string(
-                    asio::buffers_begin(bufs),
-                    ( asio::buffers_begin(bufs)
-                        + bytes_transferred )
-                );
-        }
+        evt.raw_headers = std::string(
+                asio::buffers_begin(bufs),
+                (asio::buffers_begin(bufs) + bytes_transferred));
+    }
 
+    // Instead of checking for error, which is sometimes masked by SSL errors,
+    // check for header termination.
+    const bool headers_received = evt.raw_headers.find(header_terminator)
+                                  != std::string::npos;
+
+    if (headers_received)
+    {
         // Pass the buffer incase it contains any unread data.
         evt.read_buffer = read_buffer;
 
@@ -183,17 +190,23 @@ void HandleHeaderRead(
 
         fsm.ProcessEvent(evt);  // Send HeadersReadEvent
     }
+    else if (!err)
+    {
+        std::stringstream ss;
+        ss << "Failure while reading headers url(" << fsm.get_url() << ").";
+        ss << " Header termination not in response.";
+        ss << " Received: \"" << evt.raw_headers << "\"";
+        fsm.ProcessEvent(
+                ErrorEvent{make_error_code(http_error::ReadFailure), ss.str()});
+    }
     else
     {
         std::stringstream ss;
         ss << "Failure while reading headers url(" << fsm.get_url() << ").";
-        ss << " Error: " << err.message();
+        ss << " Error: (" << err.message() << ")";
+        ss << " Received: \"" << evt.raw_headers << "\"";
         fsm.ProcessEvent(
-            ErrorEvent{
-                make_error_code(
-                    http_error::ReadFailure ),
-                ss.str()
-            });
+                ErrorEvent{make_error_code(http_error::ReadFailure), ss.str()});
     }
 }
 
@@ -214,17 +227,16 @@ public:
 
         auto read_buffer = std::make_shared<boost::asio::streambuf>();
 
-        asio::async_read_until( *fsm.get_socket_wrapper(),
-            *read_buffer, "\r\n\r\n",
-            [fsmp, state_data, read_buffer, race_preventer, start_time](
-                    const boost::system::error_code& ec,
-                    std::size_t bytes_transferred
-                )
-            {
-                HandleHeaderRead(*fsmp, state_data, read_buffer, race_preventer,
-                    start_time, bytes_transferred, ec);
-            });
-
+        asio::async_read_until(
+                *fsm.get_socket_wrapper(), *read_buffer, header_terminator,
+                [fsmp, state_data, read_buffer, race_preventer, start_time](
+                        const boost::system::error_code & ec,
+                        std::size_t bytes_transferred)
+                {
+                    HandleHeaderRead(*fsmp, state_data, read_buffer,
+                                     race_preventer, start_time,
+                                     bytes_transferred, ec);
+                });
     }
 
     template <typename Event, typename FSM>
