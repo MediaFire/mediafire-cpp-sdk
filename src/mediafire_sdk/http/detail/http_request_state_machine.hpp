@@ -129,12 +129,14 @@ asio::ssl::verify_mode CertAllowToVerifyMode(hl::SelfSigned ss)
     switch(ss)
     {
         case hl::SelfSigned::Denied:
-            return asio::ssl::verify_peer;
+            return (asio::ssl::verify_peer |
+                asio::ssl::verify_fail_if_no_peer_cert);
         case hl::SelfSigned::Permitted:
             return asio::ssl::verify_none;
         default:
             assert(!"Unknown SelfSigned type");
-            return asio::ssl::verify_peer;
+            return (asio::ssl::verify_peer |
+                asio::ssl::verify_fail_if_no_peer_cert);
     }
 }
 
