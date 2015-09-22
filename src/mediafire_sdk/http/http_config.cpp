@@ -16,12 +16,22 @@
 namespace asio = boost::asio;
 namespace ssl = boost::asio::ssl;
 
-namespace {
+namespace
+{
 ssl::context DefaultSslContext()
 {
     using mf::http::detail::pem;
 
+    // See https://www.openssl.org/docs/manmaster/ssl/SSL_CTX_new.html
+    // And boost/asio/ssl/impl/context.ipp
+
+    // sslv23_client: A TLS/SSL connection established with these methods may
+    // understand the SSLv2, SSLv3, TLSv1, TLSv1.1 and TLSv1.2 protocols.
     ssl::context ssl_ctx(ssl::context::sslv23_client);
+
+    // However we want to disable SSL and leave TLS
+    ssl_ctx.set_options(ssl::context::default_workarounds
+                        | ssl::context::no_sslv2 | ssl::context::no_sslv3);
 
     // Use Operating System's certificates if available
     ssl_ctx.set_default_verify_paths();

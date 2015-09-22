@@ -186,7 +186,7 @@ SessionMaintainerLocker::NextWaitingSessionTokenRequest()
         SessionTokenData st = session_tokens_.back();
         session_tokens_.pop_back();
 
-        STRequest request = waiting_st_requests_.front();
+        STRequest request = std::move(waiting_st_requests_.front());
         waiting_st_requests_.pop_front();
 
         DEBUG_TOKEN_COUNT();
@@ -224,32 +224,51 @@ void SessionMaintainerLocker::AddInProgressRequest(
 bool SessionMaintainerLocker::StartRequestSessionToken()
 {
     mf::utils::lock_guard<mf::utils::mutex> lock(mutex_);
-    if ((  // Have at least one session token at all times
-                in_progress_session_token_requests_ == 0
-                && session_tokens_.size() + checked_out_tokens_.size() == 0)
-        || (  // And if already has one, get as many session tokens as needed
-                   (/* Are there more requests than session tokens and session
-                       token requests?  No check against checked out tokens, as
-                       we allow maximum concurrent requests. */
-                    waiting_st_requests_.size()
-                    > in_progress_session_token_requests_
-                              + session_tokens_.size())
-                   && (/* Are there less session token requests than maximum
-                          concurrent session token requests allowed? */
-                       in_progress_session_token_requests_
-                       < SessionMaintainer::max_in_progress_token_requests)
-                   && (/* Are there less session token requests and session
-                          tokens
-                          than the maximum allowed session tokens? */
-                       in_progress_session_token_requests_
-                               + session_tokens_.size()
-                               + checked_out_tokens_.size()
-                       < SessionMaintainer::max_tokens)))
+
+    auto NoSessionTokensOrRequests = [this]() -> bool
+    {
+        // Have at least one session token at all times
+        return (in_progress_session_token_requests_ == 0
+                && session_tokens_.size() + checked_out_tokens_.size() == 0);
+    };
+
+    auto MoreEnqueuedThanAvailable = [this]() -> bool
+    {
+        /* Are there more requests than session tokens and session token
+           requests?  No check against checked out tokens, as we allow maximum
+           concurrent requests. */
+        return (waiting_st_requests_.size()
+                > in_progress_session_token_requests_ + session_tokens_.size());
+    };
+
+    auto LessRequestsThanMax = [this]() -> bool
+    {
+        /* Are there less session token requests than maximum concurrent session
+           token requests allowed? */
+        return (in_progress_session_token_requests_
+                < SessionMaintainer::max_in_progress_token_requests);
+    };
+
+    auto LessTotalTokensThanMax = [this]() -> bool
+    {
+        /* Are there less session token requests and session tokens than the
+           maximum allowed session tokens? */
+        return (in_progress_session_token_requests_ + session_tokens_.size()
+                        + checked_out_tokens_.size()
+                < SessionMaintainer::max_tokens);
+    };
+
+    if (NoSessionTokensOrRequests()
+        || (MoreEnqueuedThanAvailable() && LessRequestsThanMax()
+            && LessTotalTokensThanMax()))
     {
         ++in_progress_session_token_requests_;
         return true;
     }
-    return false;
+    else
+    {
+        return false;
+    }
 }
 
 void SessionMaintainerLocker::DecrementSessionTokenInProgressCount()
@@ -492,8 +511,7 @@ void SessionMaintainerLocker::HandleTimedOutRequest(STRequestWeak weak_request)
         if (request->UsesSessionToken())
         {
             mf::utils::unique_lock<mf::utils::mutex> lock(mutex_);
-            std::deque<STRequest>::iterator it
-                    = std::find(waiting_st_requests_.begin(),
+            auto it = std::find(waiting_st_requests_.begin(),
                                 waiting_st_requests_.end(), request);
             if (it != waiting_st_requests_.end())
             {
@@ -504,7 +522,8 @@ void SessionMaintainerLocker::HandleTimedOutRequest(STRequestWeak weak_request)
                 std::ostringstream ss;
                 ss << "No session token was available before the timeout was"
                       " reached.  Session state: " << session_state_
-                   << "  Connection state: " << connection_state_;
+                   << "  Connection state: " << connection_state_
+                   << "\n" << GetDebugOutputTokenCounts();
 
                 // In case of Fail calling mutex
                 lock.unlock();
@@ -555,18 +574,29 @@ void SessionMaintainerLocker::ResetFailureCount()
 
 
 // Only call when mutex_ is locked!
+std::string SessionMaintainerLocker::GetDebugOutputTokenCounts()
+{
+    std::ostringstream ss;
+
+    ss << "Pending token requests:    " << in_progress_session_token_requests_
+       << "\n"
+
+       << "Stored tokens:             " << session_tokens_.size() << "\n"
+
+       << "Checked-out tokens:        " << checked_out_tokens_.size() << "\n"
+
+       << "Requests waiting on token: " << waiting_st_requests_.size() << "\n"
+
+       << "Max tokens:                " << SessionMaintainer::max_tokens
+       << "\n";
+
+    return ss.str();
+}
+
+// Only call when mutex_ is locked!
 void SessionMaintainerLocker::DebugOutputTokenCounts()
 {
-    std::cout << "Pending token requests:    "
-        << in_progress_session_token_requests_ << "\n";
-    std::cout << "Stored tokens:             "
-        << session_tokens_.size() << "\n";
-    std::cout << "Checked-out tokens:        "
-        << checked_out_tokens_.size() << "\n";
-    std::cout << "Requests waiting on token: "
-        << waiting_st_requests_.size() << "\n";
-    std::cout << "Max tokens:                "
-        << SessionMaintainer::max_tokens << "\n";
+    std::cout << GetDebugOutputTokenCounts();
 }
 
 }  // namespace detail

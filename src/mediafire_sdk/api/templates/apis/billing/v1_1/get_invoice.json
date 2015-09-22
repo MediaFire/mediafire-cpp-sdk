@@ -214,11 +214,6 @@
     ],
         "return_params": [
         {
-            "cpp_type": "uint32_t",
-            "cpp_name": "invoice_id",
-            "api_path": "response.invoice.invoice_id"
-        },
-        {
             "cpp_type": "std::string",
             "cpp_name": "invoice_num",
             "api_path": "response.invoice.invoice_num"
@@ -236,7 +231,8 @@
         {
             "cpp_type": "uint32_t",
             "cpp_name": "recurring_profile_id",
-            "api_path": "response.invoice.recurring_profile_id"
+            "api_path": "response.invoice.recurring_profile_id",
+            "optional": true
         },
         {
             "cpp_type": "boost::posix_time::ptime",
@@ -321,7 +317,8 @@
         {
             "cpp_type": "std::string",
             "cpp_name": "promo_code",
-            "api_path": "response.invoice.promo_code"
+            "api_path": "response.invoice.promo_code",
+            "optional": true
         },
         {
             "cpp_type": "Product",

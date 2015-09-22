@@ -104,7 +104,7 @@ void Impl::BuildUrl(
     *path = api_path + ".php";
 }
 
-void Impl::ParseResponse( Response * /* response */ )
+void Impl::ParseResponse( Response * response )
 {
     // This function uses return defines for readability and maintainability.
 #   define return_error(error_type, error_message)                             \
@@ -113,7 +113,8 @@ void Impl::ParseResponse( Response * /* response */ )
         return;                                                                \
     }
 
-
+    // Always have response_data on success.
+    response->response_data = ResponseData();
 
 #   undef return_error
 }

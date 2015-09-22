@@ -169,9 +169,6 @@ BOOST_AUTO_TEST_CASE(partial_recursive_1)
 {
     VariantWithInnerVariant v(Three{});
 
-    // using VariantWithInnerVariant
-    //     = boost::variant<int, boost::variant<double, std::string>>;
-
     int ret = 0;
 
     MatchPartialRecursive(v,
@@ -213,12 +210,23 @@ BOOST_AUTO_TEST_CASE(partial_recursive_3)
     BOOST_CHECK_EQUAL(ret, 0);
 }
 
+BOOST_AUTO_TEST_CASE(partial_recursive_4)
+{
+    VariantWithInnerVariant v(Two{});
+
+    int ret = 0;
+
+    MatchPartialRecursive(v,
+                          [&](const Two &)  // Inner variant match
+                          {
+                              ret = 1;
+                          });
+
+    BOOST_CHECK_EQUAL(ret, 1);
+}
 BOOST_AUTO_TEST_CASE(partial_recursive_with_default_1)
 {
     VariantWithInnerVariant v(Three{});
-
-    // using VariantWithInnerVariant
-    //     = boost::variant<int, boost::variant<double, std::string>>;
 
     int ret = MatchPartialRecursiveWithDefault(
             v, 0,
@@ -256,4 +264,18 @@ BOOST_AUTO_TEST_CASE(partial_recursive_with_default_3)
             });
 
     BOOST_CHECK_EQUAL(ret, 0);
+}
+
+BOOST_AUTO_TEST_CASE(partial_recursive_with_default_4)
+{
+    VariantWithInnerVariant v(Two{});
+
+    int ret = MatchPartialRecursiveWithDefault(
+            v, 0,
+            [&](const Two &)  // Inner variant match
+            {
+                return 1;
+            });
+
+    BOOST_CHECK_EQUAL(ret, 1);
 }
