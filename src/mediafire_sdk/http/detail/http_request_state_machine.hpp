@@ -60,8 +60,10 @@
 
 #include "mediafire_sdk/http/detail/transition_config.hpp"
 
-#include "mediafire_sdk/http/post_data_pipe_interface.hpp"
 #include "mediafire_sdk/http/error.hpp"
+#include "mediafire_sdk/http/http_request.hpp"
+#include "mediafire_sdk/http/post_data_pipe_interface.hpp"
+#include "mediafire_sdk/http/request_response_interface.hpp"
 #include "mediafire_sdk/http/shared_buffer.hpp"
 
 #include "mediafire_sdk/utils/base64.hpp"
@@ -69,20 +71,20 @@
 
 // #define OUTPUT_DEBUG
 
-namespace mf {
-namespace http {
-namespace detail {
-
+namespace mf
+{
+namespace http
+{
+namespace detail
+{
 
 // Forward declarations
 class HttpRequestMachine_;
 
 /** Back-end to HttpRequest state machine.  Use this class. */
-using HttpRequestMachine =
-    boost::msm::back::state_machine<detail::HttpRequestMachine_>;
+using HttpRequestMachine = boost::msm::back::state_machine<HttpRequestMachine_>;
 using StateMachinePointer = std::shared_ptr<HttpRequestMachine>;
 using StateMachineWeakPointer = std::weak_ptr<HttpRequestMachine>;
-
 
 struct HttpRequestMachineConfig
 {
@@ -143,8 +145,11 @@ asio::ssl::verify_mode CertAllowToVerifyMode(hl::SelfSigned ss)
 // Guards
 struct IsSsl
 {
-    template <class Fsm,class Evt,class SourceState,class TargetState>
-    bool operator()(Evt const& evt, Fsm& fsm, SourceState&,TargetState&)
+    template <class Fsm, class Evt, class SourceState, class TargetState>
+    bool operator()(Evt const & /*evt*/,
+                    Fsm & fsm,
+                    SourceState &,
+                    TargetState &)
     {
         return fsm.get_is_ssl();
     }
@@ -177,50 +182,60 @@ struct HasPost
     }
 };
 
+struct StopAfterReadHeaders
+{
+    template <class Fsm, class Evt, class SourceState, class TargetState>
+    bool operator()(Evt const &, Fsm & fsm, SourceState &, TargetState &)
+    {
+        return fsm.GetStopAfterReadingResponseHeaders();
+    }
+};
+
 // front-end: define the FSM structure
-class HttpRequestMachine_ :
-    public std::enable_shared_from_this<HttpRequestMachine_>,
-    public msm::front::state_machine_def<HttpRequestMachine_>
+class HttpRequestMachine_
+        : public std::enable_shared_from_this<HttpRequestMachine_>,
+          public msm::front::state_machine_def<HttpRequestMachine_>
 {
 public:
     typedef std::shared_ptr<HttpRequestMachine_> Pointer;
 
     // Warning: Not possible to add more than 5 arguments here:
-    HttpRequestMachine_( const HttpRequestMachineConfig & config ) :
-        http_config_(config.http_config),
-        work_io_service_(config.http_config->GetWorkIoService()),
-        event_strand_(*work_io_service_),
-        bw_analyser_(http_config_->GetBandwidthAnalyser()),
-        request_creation_time_(sclock::now()),
-        transmission_delay_timer_(*work_io_service_),
-        transmission_delay_timer_enabled_(false),
-        timer_(*work_io_service_),
-        timeout_seconds_(60),
-        timeout_id_(0),
-        callback_(config.response_handler),
-        callback_io_service_(config.callback_io_service),
-        resolver_(*work_io_service_),
-        redirect_policy_(http_config_->GetRedirectPolicy()),
-        ssl_ctx_(http_config_->GetSslContext()),
-        ssl_verify_mode_(CertAllowToVerifyMode(
-                http_config_->SelfSignedCertificatesAllowed())),
-        request_method_("GET"),
-        url_(config.url),
-        original_url_(config.url),
-        send_headers_(http_config_->GetDefaultHeaders()),
-        http_proxy_(http_config_->GetHttpProxy()),
-        https_proxy_(http_config_->GetHttpsProxy()),
-        delay_multiplier_(MultiplierFromPercent(
-                http_config_->GetBandwidthUsagePercent()))
+    HttpRequestMachine_(const HttpRequestMachineConfig & config)
+            : http_config_(config.http_config),
+              work_io_service_(config.http_config->GetWorkIoService()),
+              event_strand_(*work_io_service_),
+              bw_analyser_(http_config_->GetBandwidthAnalyser()),
+              request_creation_time_(sclock::now()),
+              transmission_delay_timer_(*work_io_service_),
+              transmission_delay_timer_enabled_(false),
+              timer_(*work_io_service_),
+              timeout_seconds_(60),
+              timeout_id_(0),
+              callback_(config.response_handler),
+              callback_io_service_(config.callback_io_service),
+              resolver_(*work_io_service_),
+              redirect_policy_(http_config_->GetRedirectPolicy()),
+              ssl_ctx_(http_config_->GetSslContext()),
+              ssl_verify_mode_(CertAllowToVerifyMode(
+                      http_config_->SelfSignedCertificatesAllowed())),
+              stop_after_reading_response_headers_(false),
+              request_method_("GET"),
+              url_(config.url),
+              original_url_(config.url),
+              send_headers_(http_config_->GetDefaultHeaders()),
+              http_proxy_(http_config_->GetHttpProxy()),
+              https_proxy_(http_config_->GetHttpsProxy()),
+              delay_multiplier_(MultiplierFromPercent(
+                      http_config_->GetBandwidthUsagePercent()))
     {
-#if ! defined(NDEBUG)
-        const int object_count = request_count_.fetch_add(1,
-            boost::memory_order_relaxed);
-#       ifdef OUTPUT_DEBUG // Debug code
-        std::cout << "++HttpRequests: " << (object_count+1) << ' ' << url_
-            << std::endl;
-#       endif
-        assert( object_count < 100 );
+#if !defined(NDEBUG)
+        const int object_count
+                = request_count_.fetch_add(1, boost::memory_order_relaxed);
+#ifdef OUTPUT_DEBUG  // Debug code
+        std::cout << "++HttpRequests: " << (object_count + 1) << ' ' << url_
+                  << std::endl;
+#endif
+        assert(object_count < 100);
 #endif
     }
 
@@ -239,8 +254,7 @@ public:
 
     HttpRequestMachine & AsFront()
     {
-        return static_cast<msm::back::state_machine<HttpRequestMachine_>&>(
-            *this);
+        return *static_cast<HttpRequestMachine *>(this);
     }
 
     StateMachinePointer AsFrontShared()
@@ -479,6 +493,7 @@ public:
 
     typedef HttpRequestMachine_ m;  // makes transition table cleaner
 
+    /* clang-format off */
     // Transition table for HttpRequestMachine
     struct transition_table : mpl::vector<
         //    Start           Event                   Next            Action                Guard                                  // NOLINT
@@ -516,7 +531,8 @@ public:
         Row < ReadHeaders   , HeadersReadEvent      , ParseHeaders  , none                , none                               >,  // NOLINT
         Row < ReadHeaders   , ErrorEvent            , Error         , none                , none                               >,  // NOLINT
         //  +---------------+-----------------------+---------------+---------------------+------------------------------------+   // NOLINT
-        Row < ParseHeaders  , HeadersParsedEvent    , ReadContent   , none                , none                               >,  // NOLINT
+        Row < ParseHeaders  , HeadersParsedEvent    , ReadContent   , none                , Not_<StopAfterReadHeaders>         >,  // NOLINT
+        Row < ParseHeaders  , HeadersParsedEvent    , Complete      , none                , StopAfterReadHeaders               >,  // NOLINT
         Row < ParseHeaders  , RedirectEvent         , Redirect      , none                , none                               >,  // NOLINT
         Row < ParseHeaders  , ErrorEvent            , Error         , none                , none                               >,  // NOLINT
         //  +---------------+-----------------------+---------------+---------------------+------------------------------------+   // NOLINT
@@ -530,20 +546,28 @@ public:
         Row < Error         , ErrorEvent            , FinalError    , none                , none                               >   // NOLINT
         //  +---------------+-----------------------+---------------+---------------------+------------------------------------+   // NOLINT
     > {};
+    /* clang-format on */
 
     // Replaces the default no-transition response. Use this if you don't
     // want the machine to assert on an unexpected event.
     template <typename FSM, typename Event>
-    void no_transition(Event const& e, FSM&, int state)
+    void no_transition(Event const & e, FSM & fsm, int state)
     {
-        std::cerr << "no transition from state " << state
-            << " on event " << typeid(e).name() << std::endl;
-        assert(!"improper transition in http state machine");
+        auto error_state = fsm.template get_state<Error *>();
+        auto this_state = fsm.get_state_by_id(state);
+
+        // Cancellation can occur at any time and cause events to be ignored.
+        if (error_state != this_state)
+        {
+            std::cerr << "no transition from state " << state << " on event "
+                      << typeid(e).name() << std::endl;
+            assert(!"improper transition in http state machine");
+        }
     }
 
     // Throw exception if machine being used incorrectly.
     template <typename FSM>
-    void no_transition(ConfigEvent const& e, FSM&, int state)
+    void no_transition(ConfigEvent const & /*e*/, FSM &, int /*state*/)
     {
         throw std::logic_error("Unable to configure in progress HttpRequest.");
     }
@@ -581,10 +605,20 @@ public:
         request_method_ = "POST";
     }
 
-    uint32_t get_timeout_seconds() const {return timeout_seconds_;}
-    void set_timeout_seconds(uint32_t v) {timeout_seconds_=v;}
+    void SetStopAfterReadingResponseHeaders()
+    {
+        stop_after_reading_response_headers_ = true;
+    }
 
-    const hl::Url * get_parsed_url() const {return parsed_url_.get();}
+    bool GetStopAfterReadingResponseHeaders()
+    {
+        return stop_after_reading_response_headers_;
+    }
+
+    uint32_t get_timeout_seconds() const { return timeout_seconds_; }
+    void set_timeout_seconds(uint32_t v) { timeout_seconds_ = v; }
+
+    const hl::Url * get_parsed_url() const { return parsed_url_.get(); }
     void set_parsed_url(std::unique_ptr<hl::Url> url)
     {
         parsed_url_ = std::move(url);
@@ -607,40 +641,81 @@ public:
             return *http_proxy_;
     }
 
-    bool get_is_ssl() const {return is_ssl_;}
-    void set_is_ssl(bool v) {is_ssl_=v;}
+    bool get_is_ssl() const { return is_ssl_; }
+    void set_is_ssl(bool v) { is_ssl_ = v; }
 
-    const std::string & get_url() const {return url_;}
-    void set_url(std::string v) {url_=v;}
+    const std::string & get_url() const { return url_; }
+    void set_url(std::string v) { url_ = v; }
 
-    asio::io_service::strand * get_event_strand() {return &event_strand_;}
+    asio::io_service::strand * get_event_strand() { return &event_strand_; }
 
     const TimePoint get_request_creation_time() const
-    {return request_creation_time_;}
+    {
+        return request_creation_time_;
+    }
 
-    std::shared_ptr<SocketWrapper> get_socket_wrapper() const {return socket_wrapper_;}
-    void set_socket_wrapper(std::shared_ptr<SocketWrapper> v) {socket_wrapper_=v;}
+    std::shared_ptr<SocketWrapper> get_socket_wrapper() const
+    {
+        return socket_wrapper_;
+    }
+    void set_socket_wrapper(std::shared_ptr<SocketWrapper> v)
+    {
+        socket_wrapper_ = v;
+    }
 
-    const hl::HttpRequest::HeaderContainer & get_headers() const {return send_headers_;}
+    const hl::HttpRequest::HeaderContainer & get_headers() const
+    {
+        return send_headers_;
+    }
 
-    hl::BandwidthAnalyserInterface::Pointer get_bw_analyser() const {return bw_analyser_;}
+    const hl::BandwidthAnalyserInterface::Pointer & get_bw_analyser() const
+    {
+        return bw_analyser_;
+    }
 
-    const asio::ssl::verify_mode get_ssl_verify_mode() const {return ssl_verify_mode_;}
+    const asio::ssl::verify_mode & get_ssl_verify_mode() const
+    {
+        return ssl_verify_mode_;
+    }
 
-    boost::asio::steady_timer * get_transmission_delay_timer() {return &transmission_delay_timer_;}
+    boost::asio::steady_timer * get_transmission_delay_timer()
+    {
+        return &transmission_delay_timer_;
+    }
 
-    bool get_transmission_delay_timer_enabled() const {return transmission_delay_timer_enabled_;}
-    void set_transmission_delay_timer_enabled(bool v) {transmission_delay_timer_enabled_=v;}
+    bool get_transmission_delay_timer_enabled() const
+    {
+        return transmission_delay_timer_enabled_;
+    }
+    void set_transmission_delay_timer_enabled(bool v)
+    {
+        transmission_delay_timer_enabled_ = v;
+    }
 
-    asio::io_service * get_callback_io_service() {return callback_io_service_;}
-    std::shared_ptr<hl::RequestResponseInterface> get_callback() const {return callback_;}
+    asio::io_service * get_callback_io_service()
+    {
+        return callback_io_service_;
+    }
 
-    asio::io_service * get_work_io_service() const {return work_io_service_;}
+    struct CallbackData
+    {
+        StateMachinePointer machine;
+        std::shared_ptr<hl::RequestResponseInterface> iface;
+    };
 
-    boost::asio::ssl::context * get_ssl_ctx() const {return ssl_ctx_;}
+    CallbackData get_callback()
+    {
+        // Passing shared pointer to self ensures maching will still exist if
+        // call to callback interface frees the pointer
+        return CallbackData{AsFrontShared(), callback_};
+    }
+
+    asio::io_service * get_work_io_service() const { return work_io_service_; }
+
+    boost::asio::ssl::context * get_ssl_ctx() const { return ssl_ctx_; }
 
 protected:
-#if ! defined(NDEBUG)
+#if !defined(NDEBUG)
     // Counter to keep track of number of HttpRequests
     static boost::atomic<int> request_count_;
 #endif
@@ -685,6 +760,8 @@ protected:
     std::shared_ptr<SocketWrapper> socket_wrapper_;
 
     const asio::ssl::verify_mode ssl_verify_mode_;
+
+    bool stop_after_reading_response_headers_;
 
     // Send data.
     std::string request_method_;

@@ -13,12 +13,17 @@
 #include "boost/asio.hpp"
 #include "boost/variant/variant.hpp"
 
-#include "../shared_buffer.hpp"
-#include "types.hpp"
+#include "mediafire_sdk/http/detail/types.hpp"
+#include "mediafire_sdk/http/http_config.hpp"
+#include "mediafire_sdk/http/post_data_pipe_interface.hpp"
+#include "mediafire_sdk/http/shared_buffer.hpp"
 
-namespace mf {
-namespace http {
-namespace detail {
+namespace mf
+{
+namespace http
+{
+namespace detail
+{
 
 // Setup events
 struct ConfigEvent
@@ -49,14 +54,17 @@ struct ConfigEvent
         uint32_t timeout_seconds;
     };
 
-    typedef boost::variant<
-        ConfigRedirectPolicy,
-        ConfigRequestMethod,
-        ConfigHeader,
-        ConfigPostDataPipe,
-        ConfigPostData,
-        ConfigTimeout
-            > ConfigVariant;
+    struct StopAfterReadingResponseHeaders
+    {
+    };
+
+    typedef boost::variant<ConfigRedirectPolicy,
+                           ConfigRequestMethod,
+                           ConfigHeader,
+                           ConfigPostDataPipe,
+                           ConfigPostData,
+                           ConfigTimeout,
+                           StopAfterReadingResponseHeaders> ConfigVariant;
 
     ConfigVariant variant;
 };

@@ -75,8 +75,7 @@ public:
      * @brief Http shared pointer constructor.
      *
      * @warning If you are using SSL, work_ios must be a single thread, or you
-     *          must pass all SSL calls to a single io_service. OpenSSL is not
-     *          threadsafe.
+     *          must pass all S
      *
      * @throw boost::system::system_error If SSL certificate file can not be
      *        loaded if one was set.
@@ -218,6 +217,11 @@ public:
      * @param[in] timeout The new timeout in seconds.
      */
     void SetTimeout(uint32_t timeout);
+
+    /**
+     * @brief Set request to complete after reading the headers.
+     */
+    void SetRequestHeadersOnly();
 
     /**
      * @brief Start the request.

@@ -294,7 +294,11 @@ void hl::HttpRequest::Fail(
 void hl::HttpRequest::SetTimeout(uint32_t timeout)
 {
     impl_->ProcessEvent(
-            detail::ConfigEvent{
-                detail::ConfigEvent::ConfigTimeout{timeout}
-        });
+            detail::ConfigEvent{detail::ConfigEvent::ConfigTimeout{timeout}});
+}
+
+void hl::HttpRequest::SetRequestHeadersOnly()
+{
+    impl_->ProcessEvent(detail::ConfigEvent{
+            detail::ConfigEvent::StopAfterReadingResponseHeaders{}});
 }

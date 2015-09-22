@@ -100,6 +100,8 @@ ExpectServerSsl::ExpectServerSsl(
 {
 }
 
+void ExpectServerSsl::CloseSocket() { ssl_socket_.lowest_layer().close(); }
+
 void ExpectServerSsl::AsyncAccept()
 {
     std::cout << "Calling async_accept" << std::endl;

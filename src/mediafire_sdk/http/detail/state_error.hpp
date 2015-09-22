@@ -23,15 +23,16 @@ struct Error : public boost::msm::front::state<>
     template <typename FSM>
     void on_entry(ErrorEvent const & evt, FSM & fsm)
     {
-        assert( fsm.get_event_strand()->running_in_this_thread() );
+        assert(fsm.get_event_strand()->running_in_this_thread());
 
         // Close connection
         fsm.Disconnect();
 
-        auto timeout = fsm.get_request_creation_time() +
-            std::chrono::seconds(fsm.get_timeout_seconds());
+        auto timeout = fsm.get_request_creation_time()
+                       + std::chrono::seconds(fsm.get_timeout_seconds());
 
-        if (evt.code == mf::http::http_error::IoTimeout && sclock::now() < timeout)
+        if (evt.code == mf::http::http_error::IoTimeout
+            && sclock::now() < timeout)
         {
             // Restart everything
             fsm.ProcessEvent(RestartEvent{});

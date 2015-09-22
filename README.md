@@ -161,6 +161,111 @@ stm->Call(
 io_service.run();
 ```
 
+## Downloader
+
+Includes:
+
+```cpp
+#include "boost/asio.hpp"
+#include "boost/asio/ssl.hpp"
+#include "boost/variant/get.hpp"
+
+#include "mediafire_sdk/downloader/detail/file_writer.hpp"
+#include "mediafire_sdk/downloader/download.hpp"
+#include "mediafire_sdk/downloader/download_status.hpp"
+#include "mediafire_sdk/downloader/error.hpp"
+#include "mediafire_sdk/downloader/reader/sha256_reader.hpp"
+#include "mediafire_sdk/downloader/reader/md5_reader.hpp"
+#include "mediafire_sdk/http/url.hpp"
+#include "mediafire_sdk/utils/string.hpp"
+#include "mediafire_sdk/utils/variant.hpp"
+```
+
+Create a status handler.
+
+```cpp
+void StatusHandler(mf::downloader::DownloadStatus new_status)
+{
+    namespace status = mf::downloader::status;
+
+    Match(new_status,
+          [](const status::Progress &)
+          {
+          },
+          [](const status::Failure & failure)
+          {
+              std::cerr << "Failure: " << failure.description << "\n"
+                        << "         (" << failure.error_code.message() << "/"
+                        << failure.error_code.value() << ")" << std::endl;
+          },
+          [](const status::Success & success_data)
+          {
+              // Or if you are certain of the success type, use boost::get.
+              Match(success_data.success_type,
+                    [](const status::success::OnDisk & on_disk)
+                    {
+                        std::cerr << "Filename: " << on_disk.filepath
+                                  << std::endl;
+                    },
+                    [](const status::success::InMemory & in_memory)
+                    {
+                        const auto & buffer = in_memory.buffer;
+                        std::copy(std::begin(*buffer),
+                                  std::end(*buffer),
+                                  std::ostream_iterator<char>(std::cout));
+                        std::cout << std::endl;
+                    },
+                    [](const status::success::NoTarget &)
+                    {
+                    });
+          });
+}
+```
+
+Create the http module.
+
+```cpp
+asio::io_service io_service;
+
+auto http_config = mf::http::HttpConfig::Create();
+http_config->SetWorkIoService(&io_service);
+```
+
+Configure the download.
+
+```cpp
+mf::downloader::StatusCallback status_callback = boost::bind(&StatusHandler, _1);
+
+using Writer = config::WriteToFilesystemPath;
+using FileAction = Writer::FileAction;
+
+auto download_configuration = mf::downloader::DownloadConfig(
+        http_config,
+        Writer{FileAction::FailIfExisting, download_path});
+```
+
+Add optional readers, such as one that calculates the SHA256 of the file as it downloads.
+
+```cpp
+auto sha256_reader = std::make_shared<mf::downloader::Sha256Reader>();
+download_configuration.AddReader(sha256_reader);
+```
+
+Create the download.
+
+```cpp
+mf::downloader::Download(
+        url_str, download_configuration, status_callback);
+```
+
+Start the io service which performs all operations.
+
+```cpp
+io_service.run();
+```
+
+Now wait for the callback to be called with the result of the download.
+
 ## Uploader
 
 Includes:
@@ -240,7 +345,7 @@ upload_manager.Add(request,
     });
 ```
 
-And don't forget to start the io_service, which can run as your main loop or in a separate thread.  
+And don't forget to start the io_service, which can run as your main loop or in a separate thread.
 
 ```cpp
 io_service.run();
@@ -364,4 +469,3 @@ request->Start();
 // complete.
 io_service.run();
 ```
-

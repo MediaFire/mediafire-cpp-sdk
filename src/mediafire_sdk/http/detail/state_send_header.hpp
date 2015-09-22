@@ -86,7 +86,7 @@ class SendHeader : public boost::msm::front::state<>
 {
 public:
     template <typename Event, typename FSM>
-    void on_entry(Event const & evt, FSM & fsm)
+    void on_entry(Event const & /*evt*/, FSM & fsm)
     {
         auto state_data = std::make_shared<SendHeaderData>();
         state_data_ = state_data;
@@ -152,21 +152,24 @@ public:
         auto start_time = sclock::now();
 
         boost::asio::async_write(
-            *fsm.get_socket_wrapper(),
-            *request,
-            [fsmp, state_data, race_preventer, request, start_time](
-                   const boost::system::error_code& ec,
-                   std::size_t bytes_transferred
-                )
-            {
-                // request passed to prevent it from getting freed
-                HandleHeaderWrite(*fsmp, state_data, race_preventer, start_time,
-                    bytes_transferred, ec);
-            });
+                *fsm.get_socket_wrapper(),
+                *request,
+                [fsmp, state_data, race_preventer, request, start_time](
+                        const boost::system::error_code & ec,
+                        std::size_t bytes_transferred)
+                {
+                    // request passed to prevent it from getting freed
+                    HandleHeaderWrite(*fsmp,
+                                      state_data,
+                                      race_preventer,
+                                      start_time,
+                                      bytes_transferred,
+                                      ec);
+                });
     }
 
     template <typename Event, typename FSM>
-    void on_exit(Event const&, FSM &)
+    void on_exit(Event const &, FSM &)
     {
         state_data_->cancelled = true;
         state_data_.reset();

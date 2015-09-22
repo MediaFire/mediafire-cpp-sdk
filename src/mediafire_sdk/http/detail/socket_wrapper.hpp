@@ -5,9 +5,15 @@
  */
 #pragma once
 
-namespace mf {
-namespace http {
-namespace detail {
+#include "boost/asio.hpp"
+#include "boost/asio/ssl.hpp"
+
+namespace mf
+{
+namespace http
+{
+namespace detail
+{
 
 namespace asio = boost::asio;
 
@@ -82,15 +88,18 @@ public:
      */
     void Cancel()
     {
-        if ( ssl_socket_ )
+        if (ssl_socket_)
         {
             boost::system::error_code ec;
-            ssl_socket_->lowest_layer().cancel(ec);
+            ssl_socket_->lowest_layer().shutdown(
+                    asio::ip::tcp::socket::shutdown_both, ec);
+            ssl_socket_->lowest_layer().close(ec);
         }
         else if (socket_)
         {
             boost::system::error_code ec;
-            socket_->cancel(ec);
+            socket_->shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+            socket_->close(ec);
         }
     }
 

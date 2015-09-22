@@ -61,7 +61,7 @@ void HandleHeaderRead(
     if (fsm.get_bw_analyser())
     {
         fsm.get_bw_analyser()->RecordIncomingBytes(
-            read_buffer->size(), start_time, sclock::now() );
+                read_buffer->size(), start_time, sclock::now());
     }
 
     HeadersReadEvent evt;

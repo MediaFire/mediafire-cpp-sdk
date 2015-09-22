@@ -8,22 +8,25 @@
  */
 #pragma once
 
+#include "boost/variant/static_visitor.hpp"
+
+#include "mediafire_sdk/http/detail/http_request_events.hpp"
+
 #include "mediafire_sdk/utils/base64.hpp"
 #include "mediafire_sdk/utils/string.hpp"
 
-namespace mf {
-namespace http {
-namespace detail {
+namespace mf
+{
+namespace http
+{
+namespace detail
+{
 
-template<typename FSM>
-class ConfigEventHandler
-    : public boost::static_visitor<>
+template <typename FSM>
+class ConfigEventHandler : public boost::static_visitor<>
 {
 public:
-    explicit ConfigEventHandler(FSM & fsm) :
-        fsm_(fsm)
-    {
-    }
+    explicit ConfigEventHandler(FSM & fsm) : fsm_(fsm) {}
 
     void operator()(const ConfigEvent::ConfigRedirectPolicy & cfg) const
     {
@@ -53,6 +56,11 @@ public:
     void operator()( const ConfigEvent::ConfigTimeout & cfg) const
     {
         fsm_.set_timeout_seconds(cfg.timeout_seconds);
+    }
+
+    void operator()(const ConfigEvent::StopAfterReadingResponseHeaders &) const
+    {
+        fsm_.SetStopAfterReadingResponseHeaders();
     }
 
 private:

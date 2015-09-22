@@ -1,5 +1,5 @@
 /**
- * @file api/upload_manager.hpp
+ * @file mediafire_sdk/uploader/upload_manager.hpp
  * @author Herbert Jones
  * @brief Upload manager to permit easy uploading
  * @copyright Copyright 2014 Mediafire

@@ -28,18 +28,16 @@ private:
 
     // boost::asio::ssl::context context_;
 
-    ExpectServer(
-            boost::asio::io_service * io_service,
-            std::shared_ptr<boost::asio::io_service::work> work,
-            uint16_t port
-            );
+    ExpectServer(boost::asio::io_service * io_service,
+                 std::shared_ptr<boost::asio::io_service::work> work,
+                 uint16_t port);
 
     // Async overrides
+    virtual void CloseSocket() override;
     virtual void AsyncAccept() override;
     virtual void Handshake() override;
     virtual void SendMessageWrite(
-            const expect_server_test::SendMessage & node
-        ) override;
+            const expect_server_test::SendMessage & node) override;
     virtual void ExpectRegexRead(const ExpectRegex & node) override;
     virtual void ExpectContentLengthRead(
             uint64_t bytes_to_read,

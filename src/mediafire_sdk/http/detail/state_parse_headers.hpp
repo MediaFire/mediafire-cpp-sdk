@@ -27,6 +27,8 @@ public:
     {
         using mf::http::http_error;
 
+        auto callback_data = fsm.get_callback();
+
         if (evt.status_code == 301 || evt.status_code == 302)
         {
             auto it = evt.headers.find("location");
@@ -44,18 +46,20 @@ public:
             }
             else
             {
-                try {
-                    auto iface = fsm.get_callback();
+                try
+                {
+                    auto iface = callback_data.iface;
                     auto url = mf::http::Url(it->second);
 
-                    mf::http::Headers headers = { evt.raw_headers,
-                        evt.status_code, evt.status_message, evt.headers };
+                    mf::http::Headers headers = {evt.raw_headers,
+                                                 evt.status_code,
+                                                 evt.status_message,
+                                                 evt.headers};
 
-                    if ( fsm.get_callback_io_service() ==
-                        fsm.get_work_io_service())
+                    if (fsm.get_callback_io_service()
+                        == fsm.get_work_io_service())
                     {
-                        iface->RedirectHeaderReceived( headers,
-                            url );
+                        iface->RedirectHeaderReceived(headers, url);
                     }
                     else
                     {
@@ -87,13 +91,15 @@ public:
         }
         else
         {
-            mf::http::Headers headers = { evt.raw_headers, evt.status_code,
-                evt.status_message, evt.headers };
+            mf::http::Headers headers = {evt.raw_headers,
+                                         evt.status_code,
+                                         evt.status_message,
+                                         evt.headers};
 
-            auto iface = fsm.get_callback();
-            if ( fsm.get_callback_io_service() == fsm.get_work_io_service())
+            auto iface = callback_data.iface;
+            if (fsm.get_callback_io_service() == fsm.get_work_io_service())
             {
-                iface->ResponseHeaderReceived( headers );
+                iface->ResponseHeaderReceived(headers);
             }
             else
             {

@@ -66,17 +66,21 @@ struct ExpectDisconnect
 {
     boost::optional<std::size_t> total_bytes;
 };
-struct ExpectHandshake {};
+struct ExpectDisconnectAndReconnect
+{
+};
+struct ExpectHandshake
+{
+};
 
-typedef boost::variant<
-    expect_server_test::SendMessage,
-    ExpectRegex,
-    ExpectError,
-    ExpectContentLength,
-    ExpectHeadersRead,
-    ExpectDisconnect,
-    ExpectHandshake
-    > ExpectNode;
+using ExpectNode = boost::variant<expect_server_test::SendMessage,
+                                  ExpectRegex,
+                                  ExpectError,
+                                  ExpectContentLength,
+                                  ExpectHeadersRead,
+                                  ExpectDisconnect,
+                                  ExpectDisconnectAndReconnect,
+                                  ExpectHandshake>;
 
 /**
  * The expect server handles both sides of an HTPP request, for testing
@@ -117,15 +121,16 @@ public:
     virtual void RequestResponseCompleteEvent() override;
 
     // Apply visitors
-    void operator()(const expect_server_test::SendMessage & node);
-    void operator()(const ExpectRegex & node);
+    void operator()(const expect_server_test::SendMessage &);
+    void operator()(const ExpectRegex &);
     void operator()(const ExpectError &);
-    void operator()(const ExpectContentLength & node);
-    void operator()(const ExpectDisconnect& node);
-    void operator()(const ExpectHeadersRead&);
-    void operator()(const ExpectHandshake&);
+    void operator()(const ExpectContentLength &);
+    void operator()(const ExpectDisconnect &);
+    void operator()(const ExpectDisconnectAndReconnect &);
+    void operator()(const ExpectHeadersRead &);
+    void operator()(const ExpectHandshake &);
 
-    virtual void SetActionTimeoutMs( uint32_t timeout_ms );
+    virtual void SetActionTimeoutMs(uint32_t timeout_ms);
 
 protected:
     boost::asio::io_service * io_service_;
@@ -187,20 +192,16 @@ protected:
 
     void SetActionTimeout(uint32_t timeout);
 
-    void ActionTimeout( const boost::system::error_code& err );
+    void ActionTimeout(const boost::system::error_code & err);
 
     // Async overrides
+    virtual void CloseSocket() = 0;
     virtual void AsyncAccept() = 0;
     virtual void Handshake() = 0;
-    virtual void SendMessageWrite(
-            const expect_server_test::SendMessage & node
-        ) = 0;
+    virtual void SendMessageWrite(const expect_server_test::SendMessage & node)
+            = 0;
     virtual void ExpectRegexRead(const ExpectRegex & node) = 0;
-    virtual void ExpectContentLengthRead(
-            uint64_t bytes_to_read,
-            const std::size_t total_bytes,
-            std::size_t total_read_bytes
-        ) = 0;
+    virtual void ExpectContentLengthRead(uint64_t bytes_to_read,
+                                         const std::size_t total_bytes,
+                                         std::size_t total_read_bytes) = 0;
 };
-
-

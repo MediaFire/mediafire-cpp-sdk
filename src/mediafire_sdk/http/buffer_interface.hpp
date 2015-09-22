@@ -7,10 +7,12 @@
  */
 #pragma once
 
-#include <cstddef>
+#include <cstdint>
 
-namespace mf {
-namespace http {
+namespace mf
+{
+namespace http
+{
 
 /**
  * Interface for buffers used by HttpRequest.

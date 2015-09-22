@@ -57,7 +57,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL Windows)
     if(MSVC)
         # Asio uses a lot of deprecated functions internall
         add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
-        
+
         # Static linking against runtime
         option(USE_MSVC_STATIC_RUNTIME "Use MSVC static runtime switch /MT" OFF)
         if( USE_MSVC_STATIC_RUNTIME )
@@ -129,4 +129,5 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 add_subdirectory(utils)
 add_subdirectory(http)
 add_subdirectory(api)
+add_subdirectory(downloader)
 add_subdirectory(uploader)

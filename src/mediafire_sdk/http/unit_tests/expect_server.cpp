@@ -29,42 +29,39 @@ ExpectServer::Pointer ExpectServer::Create(
     return ptr;
 }
 
-ExpectServer::ExpectServer(
-        boost::asio::io_service * io_service,
-        std::shared_ptr<boost::asio::io_service::work> work,
-        uint16_t port
-        ) :
-    ExpectServerBase(io_service, work, port),
-    acceptor_(*io_service, tcp::endpoint(tcp::v4(), port_)),
-    socket_(*io_service)
+ExpectServer::ExpectServer(boost::asio::io_service * io_service,
+                           std::shared_ptr<boost::asio::io_service::work> work,
+                           uint16_t port)
+        : ExpectServerBase(io_service, work, port),
+          acceptor_(*io_service, tcp::endpoint(tcp::v4(), port_)),
+          socket_(*io_service)
 {
 }
+
+void ExpectServer::CloseSocket() { socket_.close(); }
 
 void ExpectServer::AsyncAccept()
 {
     acceptor_.async_accept(socket_,
-            boost::bind(
-                &ExpectServer::HandleAccept,
-                shared_from_this(),
-                asio::placeholders::error
-                ));
+                           boost::bind(&ExpectServer::HandleAccept,
+                                       shared_from_this(),
+                                       asio::placeholders::error));
 }
 
 void ExpectServer::SendMessageWrite(
-        const expect_server_test::SendMessage & node
-    )
+        const expect_server_test::SendMessage & node)
 {
-    asio::async_write(
-            socket_,
-            asio::buffer(*node.message),
-            boost::bind(
-                &ExpectServer::HandleWrite,
-                shared_from_this(),
-                node.message,  // Pass to keep memory alive
-                asio::placeholders::bytes_transferred,
-                asio::placeholders::error
-                )
-            );
+    // Without this the receiver might not get the message before timeout.
+    boost::asio::ip::tcp::no_delay option(true);
+    socket_.set_option(option);
+
+    asio::async_write(socket_,
+                      asio::buffer(*node.message),
+                      boost::bind(&ExpectServer::HandleWrite,
+                                  shared_from_this(),
+                                  node.message,  // Pass to keep memory alive
+                                  asio::placeholders::bytes_transferred,
+                                  asio::placeholders::error));
 }
 
 void ExpectServer::ExpectRegexRead(const ExpectRegex & node)
