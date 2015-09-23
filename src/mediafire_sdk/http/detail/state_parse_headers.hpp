@@ -69,7 +69,7 @@ public:
                     }
 
                     RedirectEvent redirect(evt);
-                    redirect.redirect_url = url.full_path();
+                    redirect.redirect_url = url.full_url();
                     fsm.ProcessEvent(redirect);
                 }
                 catch(mf::http::InvalidUrl & err)
