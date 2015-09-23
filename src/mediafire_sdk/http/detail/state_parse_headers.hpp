@@ -46,8 +46,7 @@ public:
             {
                 try {
                     auto iface = fsm.get_callback();
-                    auto url = mf::http::Url(
-                        fsm.get_parsed_url()->FromRedirect(it->second));
+                    auto url = mf::http::Url(it->second);
 
                     mf::http::Headers headers = { evt.raw_headers,
                         evt.status_code, evt.status_message, evt.headers };
@@ -69,7 +68,7 @@ public:
                     }
 
                     RedirectEvent redirect(evt);
-                    redirect.redirect_url = url.full_path();
+                    redirect.redirect_url = it->second;
                     fsm.ProcessEvent(redirect);
                 }
                 catch(mf::http::InvalidUrl & err)
