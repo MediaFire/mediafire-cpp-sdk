@@ -56,4 +56,9 @@ add_library(mf_sdk_utils STATIC
     ${UTILS_HEADERS}
     ${UTILS_SOURCES}
 )
+
+target_link_libraries(mf_sdk_utils
+    ${Boost_LIBRARIES}
+    ${OPENSSL_LIBRARIES}
+)
 install(TARGETS mf_sdk_utils DESTINATION lib)
