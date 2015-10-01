@@ -1637,7 +1637,7 @@ def get_hpp_namespaced_enums(api):
         return ''
     ret = []
     for (enum_cpp_name, enum_members) in parse_enum_params(api['enums']):
-        ret.append('    using ' + enum_cpp_name + ' = enum ' + enum_cpp_name +
+        ret.append('    using ' + enum_cpp_name + ' = ' + enum_cpp_name +
                    ';')
     comment = '\n    // Enums in class namespace for usage with templates\n'
     return comment + '\n'.join(ret) + '\n\n'

@@ -75,7 +75,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using CancellationReason = enum CancellationReason;
+    using CancellationReason = CancellationReason;
 
     /**
      * API request "billing/cancel_plan"

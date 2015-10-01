@@ -179,11 +179,11 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Details = enum Details;
-    using FileDrop = enum FileDrop;
-    using SharedByUser = enum SharedByUser;
-    using ExplicitShare = enum ExplicitShare;
-    using Permission = enum Permission;
+    using Details = Details;
+    using FileDrop = FileDrop;
+    using SharedByUser = SharedByUser;
+    using ExplicitShare = ExplicitShare;
+    using Permission = Permission;
 
     /**
      * API request "folder/get_info"

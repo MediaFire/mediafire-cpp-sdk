@@ -107,9 +107,9 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using NofifyOwnerByEmail = enum NofifyOwnerByEmail;
-    using BurnAfterUse = enum BurnAfterUse;
-    using GetCountsOnly = enum GetCountsOnly;
+    using NofifyOwnerByEmail = NofifyOwnerByEmail;
+    using BurnAfterUse = BurnAfterUse;
+    using GetCountsOnly = GetCountsOnly;
 
     /**
      * API request "file/one_time_key"

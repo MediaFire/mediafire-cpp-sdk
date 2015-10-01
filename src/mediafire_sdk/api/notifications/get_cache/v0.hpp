@@ -89,7 +89,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Viewable = enum Viewable;
+    using Viewable = Viewable;
 
     /**
      * API request "notifications/get_cache"

@@ -89,9 +89,9 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Gender = enum Gender;
-    using ReceiveNewsletter = enum ReceiveNewsletter;
-    using PrimaryUsage = enum PrimaryUsage;
+    using Gender = Gender;
+    using ReceiveNewsletter = ReceiveNewsletter;
+    using PrimaryUsage = PrimaryUsage;
 
     /**
      * API request "user/update"

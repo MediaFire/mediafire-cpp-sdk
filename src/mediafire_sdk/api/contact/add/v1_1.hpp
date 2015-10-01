@@ -81,8 +81,8 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using ContactType = enum ContactType;
-    using Gender = enum Gender;
+    using ContactType = ContactType;
+    using Gender = Gender;
 
     /**
      * API request "contact/add"

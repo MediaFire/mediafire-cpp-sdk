@@ -72,7 +72,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using AsyncJobs = enum AsyncJobs;
+    using AsyncJobs = AsyncJobs;
 
     /**
      * API request "device/get_status"

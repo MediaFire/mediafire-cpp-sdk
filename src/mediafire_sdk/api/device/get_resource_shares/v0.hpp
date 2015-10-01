@@ -91,7 +91,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Permissions = enum Permissions;
+    using Permissions = Permissions;
 
     /**
      * API request "device/get_resource_shares"

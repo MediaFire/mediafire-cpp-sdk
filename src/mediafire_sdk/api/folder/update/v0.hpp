@@ -91,9 +91,9 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Asynchronous = enum Asynchronous;
-    using Privacy = enum Privacy;
-    using PrivacyRecursive = enum PrivacyRecursive;
+    using Asynchronous = Asynchronous;
+    using Privacy = Privacy;
+    using PrivacyRecursive = PrivacyRecursive;
 
     /**
      * API request "folder/update"

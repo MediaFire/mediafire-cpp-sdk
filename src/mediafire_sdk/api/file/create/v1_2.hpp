@@ -169,9 +169,9 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using FileType = enum FileType;
-    using PasswordProtected = enum PasswordProtected;
-    using Privacy = enum Privacy;
+    using FileType = FileType;
+    using PasswordProtected = PasswordProtected;
+    using Privacy = Privacy;
 
     /**
      * API request "file/create"

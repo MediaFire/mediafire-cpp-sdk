@@ -107,7 +107,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Recurring = enum Recurring;
+    using Recurring = Recurring;
 
     /**
      * API request "billing/get_plans"

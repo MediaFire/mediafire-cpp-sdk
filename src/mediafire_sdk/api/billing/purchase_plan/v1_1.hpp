@@ -96,8 +96,8 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using PaymentMethod = enum PaymentMethod;
-    using KeepCard = enum KeepCard;
+    using PaymentMethod = PaymentMethod;
+    using KeepCard = KeepCard;
 
     /**
      * API request "billing/purchase_plan"

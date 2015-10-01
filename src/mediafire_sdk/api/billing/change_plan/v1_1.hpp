@@ -81,7 +81,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using InfoOnly = enum InfoOnly;
+    using InfoOnly = InfoOnly;
 
     /**
      * API request "billing/change_plan"

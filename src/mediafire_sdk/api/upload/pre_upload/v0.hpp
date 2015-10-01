@@ -147,12 +147,12 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Resumability = enum Resumability;
-    using ActionOnDuplicate = enum ActionOnDuplicate;
-    using StorageLimit = enum StorageLimit;
-    using DuplicateName = enum DuplicateName;
-    using UnitsReady = enum UnitsReady;
-    using KnownByCloud = enum KnownByCloud;
+    using Resumability = Resumability;
+    using ActionOnDuplicate = ActionOnDuplicate;
+    using StorageLimit = StorageLimit;
+    using DuplicateName = DuplicateName;
+    using UnitsReady = UnitsReady;
+    using KnownByCloud = KnownByCloud;
 
     /**
      * API request "upload/pre_upload"
