@@ -313,17 +313,17 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using ContentType = enum ContentType;
-    using OrderBy = enum OrderBy;
-    using OrderDirection = enum OrderDirection;
-    using Details = enum Details;
-    using Privacy = enum Privacy;
-    using FileDrop = enum FileDrop;
-    using PasswordProtected = enum PasswordProtected;
-    using SharedByUser = enum SharedByUser;
-    using SharedWithUser = enum SharedWithUser;
-    using ExplicitShare = enum ExplicitShare;
-    using Permission = enum Permission;
+    using ContentType = ContentType;
+    using OrderBy = OrderBy;
+    using OrderDirection = OrderDirection;
+    using Details = Details;
+    using Privacy = Privacy;
+    using FileDrop = FileDrop;
+    using PasswordProtected = PasswordProtected;
+    using SharedByUser = SharedByUser;
+    using SharedWithUser = SharedWithUser;
+    using ExplicitShare = ExplicitShare;
+    using Permission = Permission;
 
     /**
      * API request "folder/get_content"

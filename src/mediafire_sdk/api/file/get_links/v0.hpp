@@ -139,8 +139,8 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Recurring = enum Recurring;
-    using LinkType = enum LinkType;
+    using Recurring = Recurring;
+    using LinkType = LinkType;
 
     /**
      * API request "file/get_links"

@@ -122,7 +122,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using AllUnitsReady = enum AllUnitsReady;
+    using AllUnitsReady = AllUnitsReady;
 
     /**
      * API request "upload/poll_upload"

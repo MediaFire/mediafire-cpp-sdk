@@ -105,8 +105,8 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using ContactIndirect = enum ContactIndirect;
-    using Permissions = enum Permissions;
+    using ContactIndirect = ContactIndirect;
+    using Permissions = Permissions;
 
     /**
      * API request "device/get_user_shares"

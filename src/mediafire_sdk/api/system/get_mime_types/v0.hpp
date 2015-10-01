@@ -125,9 +125,9 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Category = enum Category;
-    using ViewSystem = enum ViewSystem;
-    using EditSystem = enum EditSystem;
+    using Category = Category;
+    using ViewSystem = ViewSystem;
+    using EditSystem = EditSystem;
 
     /**
      * API request "system/get_mime_types"

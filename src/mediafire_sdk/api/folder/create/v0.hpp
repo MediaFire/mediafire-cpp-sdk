@@ -100,9 +100,9 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using OnNameCollision = enum OnNameCollision;
-    using FileDrop = enum FileDrop;
-    using Privacy = enum Privacy;
+    using OnNameCollision = OnNameCollision;
+    using FileDrop = FileDrop;
+    using Privacy = Privacy;
 
     /**
      * API request "folder/create"

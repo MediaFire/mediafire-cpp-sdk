@@ -80,7 +80,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using AtHead = enum AtHead;
+    using AtHead = AtHead;
 
     /**
      * API request "file/get_versions"

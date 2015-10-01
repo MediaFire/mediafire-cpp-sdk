@@ -232,12 +232,12 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Gender = enum Gender;
-    using AccountType = enum AccountType;
-    using Validated = enum Validated;
-    using LimitExceeded = enum LimitExceeded;
-    using FacebookLinked = enum FacebookLinked;
-    using TwitterLinked = enum TwitterLinked;
+    using Gender = Gender;
+    using AccountType = AccountType;
+    using Validated = Validated;
+    using LimitExceeded = LimitExceeded;
+    using FacebookLinked = FacebookLinked;
+    using TwitterLinked = TwitterLinked;
 
     /**
      * API request "user/get_info"

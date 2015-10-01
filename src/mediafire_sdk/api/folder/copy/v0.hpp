@@ -78,7 +78,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Asynchronous = enum Asynchronous;
+    using Asynchronous = Asynchronous;
 
     /**
      * API request "folder/copy"

@@ -69,7 +69,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Type = enum Type;
+    using Type = Type;
 
     /**
      * API request "user/get_action_token"

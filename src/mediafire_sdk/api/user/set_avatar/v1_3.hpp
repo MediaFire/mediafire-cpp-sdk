@@ -72,7 +72,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Action = enum Action;
+    using Action = Action;
 
     /**
      * API request "user/set_avatar"

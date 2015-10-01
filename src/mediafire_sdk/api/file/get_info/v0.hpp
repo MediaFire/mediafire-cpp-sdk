@@ -168,11 +168,11 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Privacy = enum Privacy;
-    using PasswordProtected = enum PasswordProtected;
-    using SharedByUser = enum SharedByUser;
-    using ExplicitShare = enum ExplicitShare;
-    using Permission = enum Permission;
+    using Privacy = Privacy;
+    using PasswordProtected = PasswordProtected;
+    using SharedByUser = SharedByUser;
+    using ExplicitShare = ExplicitShare;
+    using Permission = Permission;
 
     /**
      * API request "file/get_info"

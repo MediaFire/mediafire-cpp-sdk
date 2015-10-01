@@ -204,16 +204,16 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Resumable = enum Resumable;
-    using HashAlreadyInSystem = enum HashAlreadyInSystem;
-    using HashAlreadyInAccount = enum HashAlreadyInAccount;
-    using HashAlreadyInFolder = enum HashAlreadyInFolder;
-    using FilenameInFolder = enum FilenameInFolder;
-    using FileExistsWithDifferentHash = enum FileExistsWithDifferentHash;
-    using StorageLimitExceeded = enum StorageLimitExceeded;
-    using ActionOnDuplicate = enum ActionOnDuplicate;
-    using VersionControl = enum VersionControl;
-    using AllUnitsReady = enum AllUnitsReady;
+    using Resumable = Resumable;
+    using HashAlreadyInSystem = HashAlreadyInSystem;
+    using HashAlreadyInAccount = HashAlreadyInAccount;
+    using HashAlreadyInFolder = HashAlreadyInFolder;
+    using FilenameInFolder = FilenameInFolder;
+    using FileExistsWithDifferentHash = FileExistsWithDifferentHash;
+    using StorageLimitExceeded = StorageLimitExceeded;
+    using ActionOnDuplicate = ActionOnDuplicate;
+    using VersionControl = VersionControl;
+    using AllUnitsReady = AllUnitsReady;
 
     /**
      * API request "upload/check"

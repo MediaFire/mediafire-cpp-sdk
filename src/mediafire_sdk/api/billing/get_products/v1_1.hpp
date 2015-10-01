@@ -174,12 +174,12 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Recurring = enum Recurring;
-    using Trial = enum Trial;
-    using Activity = enum Activity;
-    using UsesCredits = enum UsesCredits;
-    using YearlyOnly = enum YearlyOnly;
-    using Legacy = enum Legacy;
+    using Recurring = Recurring;
+    using Trial = Trial;
+    using Activity = Activity;
+    using UsesCredits = UsesCredits;
+    using YearlyOnly = YearlyOnly;
+    using Legacy = Legacy;
 
     /**
      * API request "billing/get_products"

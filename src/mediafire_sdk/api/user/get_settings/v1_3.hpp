@@ -171,13 +171,13 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using DownloadPage = enum DownloadPage;
-    using EmailValidation = enum EmailValidation;
-    using InstantUploads = enum InstantUploads;
-    using AutoBandwidth = enum AutoBandwidth;
-    using StorageLimit = enum StorageLimit;
-    using ShareLinkStatus = enum ShareLinkStatus;
-    using CollectMetadata = enum CollectMetadata;
+    using DownloadPage = DownloadPage;
+    using EmailValidation = EmailValidation;
+    using InstantUploads = InstantUploads;
+    using AutoBandwidth = AutoBandwidth;
+    using StorageLimit = StorageLimit;
+    using ShareLinkStatus = ShareLinkStatus;
+    using CollectMetadata = CollectMetadata;
 
     /**
      * API request "user/get_settings"

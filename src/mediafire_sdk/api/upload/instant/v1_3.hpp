@@ -77,7 +77,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using ActionOnDuplicate = enum ActionOnDuplicate;
+    using ActionOnDuplicate = ActionOnDuplicate;
 
     /**
      * API request "upload/instant"

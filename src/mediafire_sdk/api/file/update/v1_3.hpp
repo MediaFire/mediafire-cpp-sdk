@@ -69,7 +69,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Privacy = enum Privacy;
+    using Privacy = Privacy;
 
     /**
      * API request "file/update"
