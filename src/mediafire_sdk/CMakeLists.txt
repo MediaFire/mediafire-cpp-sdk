@@ -26,7 +26,7 @@ ENDIF (NOT MSVC)
 
 if(CMAKE_SYSTEM_NAME STREQUAL Windows)
     # We support down to Windows XP
-    add_definitions(-DWINVER=0x0502 -D_WIN32_WINNT=0x0502)
+    add_definitions(-DWINVER=0x0501 -D_WIN32_WINNT=0x0501)
 
     # Path to Windows Sockets
     find_library(WINSOCK_LIBRARY NAMES ws2_32 DOC "Path to WinSock library (WS2_32.lib)")
