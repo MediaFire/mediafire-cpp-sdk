@@ -77,7 +77,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using ActionOnDuplicate = ActionOnDuplicate;
+    using ActionOnDuplicate = ::mf::api::upload::instant::v1_3::ActionOnDuplicate;
 
     /**
      * API request "upload/instant"

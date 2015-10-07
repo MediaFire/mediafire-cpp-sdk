@@ -107,9 +107,9 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using NofifyOwnerByEmail = NofifyOwnerByEmail;
-    using BurnAfterUse = BurnAfterUse;
-    using GetCountsOnly = GetCountsOnly;
+    using NofifyOwnerByEmail = ::mf::api::file::one_time_key::v1_3::NofifyOwnerByEmail;
+    using BurnAfterUse = ::mf::api::file::one_time_key::v1_3::BurnAfterUse;
+    using GetCountsOnly = ::mf::api::file::one_time_key::v1_3::GetCountsOnly;
 
     /**
      * API request "file/one_time_key"

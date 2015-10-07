@@ -81,7 +81,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using InfoOnly = InfoOnly;
+    using InfoOnly = ::mf::api::billing::change_plan::v1_1::InfoOnly;
 
     /**
      * API request "billing/change_plan"

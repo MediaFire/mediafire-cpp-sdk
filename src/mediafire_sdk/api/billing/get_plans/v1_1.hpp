@@ -107,7 +107,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Recurring = Recurring;
+    using Recurring = ::mf::api::billing::get_plans::v1_1::Recurring;
 
     /**
      * API request "billing/get_plans"

@@ -84,7 +84,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using TOSAccepted = TOSAccepted;
+    using TOSAccepted = ::mf::api::user::fetch_tos::v1_3::TOSAccepted;
 
     /**
      * API request "user/fetch_tos"

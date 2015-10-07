@@ -263,11 +263,11 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Gender = Gender;
-    using AccountType = AccountType;
-    using Validated = Validated;
-    using LimitExceeded = LimitExceeded;
-    using Linked = Linked;
+    using Gender = ::mf::api::user::get_info::v1_3::Gender;
+    using AccountType = ::mf::api::user::get_info::v1_3::AccountType;
+    using Validated = ::mf::api::user::get_info::v1_3::Validated;
+    using LimitExceeded = ::mf::api::user::get_info::v1_3::LimitExceeded;
+    using Linked = ::mf::api::user::get_info::v1_3::Linked;
 
     /**
      * API request "user/get_info"

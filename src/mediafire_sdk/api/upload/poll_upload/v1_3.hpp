@@ -122,7 +122,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using AllUnitsReady = AllUnitsReady;
+    using AllUnitsReady = ::mf::api::upload::poll_upload::v1_3::AllUnitsReady;
 
     /**
      * API request "upload/poll_upload"

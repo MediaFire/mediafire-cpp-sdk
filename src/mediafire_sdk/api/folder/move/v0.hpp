@@ -75,7 +75,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Asynchronous = Asynchronous;
+    using Asynchronous = ::mf::api::folder::move::v0::Asynchronous;
 
     /**
      * API request "folder/move"

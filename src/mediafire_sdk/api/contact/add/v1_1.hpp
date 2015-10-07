@@ -81,8 +81,8 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using ContactType = ContactType;
-    using Gender = Gender;
+    using ContactType = ::mf::api::contact::add::v1_1::ContactType;
+    using Gender = ::mf::api::contact::add::v1_1::Gender;
 
     /**
      * API request "contact/add"

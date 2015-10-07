@@ -89,9 +89,9 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Gender = Gender;
-    using ReceiveNewsletter = ReceiveNewsletter;
-    using PrimaryUsage = PrimaryUsage;
+    using Gender = ::mf::api::user::update::v1_3::Gender;
+    using ReceiveNewsletter = ::mf::api::user::update::v1_3::ReceiveNewsletter;
+    using PrimaryUsage = ::mf::api::user::update::v1_3::PrimaryUsage;
 
     /**
      * API request "user/update"

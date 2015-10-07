@@ -171,13 +171,13 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using DownloadPage = DownloadPage;
-    using EmailValidation = EmailValidation;
-    using InstantUploads = InstantUploads;
-    using AutoBandwidth = AutoBandwidth;
-    using StorageLimit = StorageLimit;
-    using ShareLinkStatus = ShareLinkStatus;
-    using CollectMetadata = CollectMetadata;
+    using DownloadPage = ::mf::api::user::get_settings::v1_3::DownloadPage;
+    using EmailValidation = ::mf::api::user::get_settings::v1_3::EmailValidation;
+    using InstantUploads = ::mf::api::user::get_settings::v1_3::InstantUploads;
+    using AutoBandwidth = ::mf::api::user::get_settings::v1_3::AutoBandwidth;
+    using StorageLimit = ::mf::api::user::get_settings::v1_3::StorageLimit;
+    using ShareLinkStatus = ::mf::api::user::get_settings::v1_3::ShareLinkStatus;
+    using CollectMetadata = ::mf::api::user::get_settings::v1_3::CollectMetadata;
 
     /**
      * API request "user/get_settings"

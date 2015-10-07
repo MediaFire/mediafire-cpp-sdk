@@ -69,7 +69,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Type = Type;
+    using Type = ::mf::api::user::get_action_token::v1_0::Type;
 
     /**
      * API request "user/get_action_token"

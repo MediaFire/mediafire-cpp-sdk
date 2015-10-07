@@ -91,9 +91,9 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Asynchronous = Asynchronous;
-    using Privacy = Privacy;
-    using PrivacyRecursive = PrivacyRecursive;
+    using Asynchronous = ::mf::api::folder::update::v0::Asynchronous;
+    using Privacy = ::mf::api::folder::update::v0::Privacy;
+    using PrivacyRecursive = ::mf::api::folder::update::v0::PrivacyRecursive;
 
     /**
      * API request "folder/update"

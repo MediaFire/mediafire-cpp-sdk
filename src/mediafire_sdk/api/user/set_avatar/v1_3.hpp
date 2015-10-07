@@ -72,7 +72,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Action = Action;
+    using Action = ::mf::api::user::set_avatar::v1_3::Action;
 
     /**
      * API request "user/set_avatar"

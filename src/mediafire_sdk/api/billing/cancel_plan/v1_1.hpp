@@ -75,7 +75,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using CancellationReason = CancellationReason;
+    using CancellationReason = ::mf::api::billing::cancel_plan::v1_1::CancellationReason;
 
     /**
      * API request "billing/cancel_plan"

@@ -324,18 +324,18 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using ContentType = ContentType;
-    using OrderBy = OrderBy;
-    using OrderDirection = OrderDirection;
-    using Details = Details;
-    using Privacy = Privacy;
-    using ExplicitShare = ExplicitShare;
-    using FileDrop = FileDrop;
-    using PasswordProtected = PasswordProtected;
-    using Permission = Permission;
-    using SharedByUser = SharedByUser;
-    using SharedWithUser = SharedWithUser;
-    using ChunksRemaining = ChunksRemaining;
+    using ContentType = ::mf::api::folder::get_content::v1_2::ContentType;
+    using OrderBy = ::mf::api::folder::get_content::v1_2::OrderBy;
+    using OrderDirection = ::mf::api::folder::get_content::v1_2::OrderDirection;
+    using Details = ::mf::api::folder::get_content::v1_2::Details;
+    using Privacy = ::mf::api::folder::get_content::v1_2::Privacy;
+    using ExplicitShare = ::mf::api::folder::get_content::v1_2::ExplicitShare;
+    using FileDrop = ::mf::api::folder::get_content::v1_2::FileDrop;
+    using PasswordProtected = ::mf::api::folder::get_content::v1_2::PasswordProtected;
+    using Permission = ::mf::api::folder::get_content::v1_2::Permission;
+    using SharedByUser = ::mf::api::folder::get_content::v1_2::SharedByUser;
+    using SharedWithUser = ::mf::api::folder::get_content::v1_2::SharedWithUser;
+    using ChunksRemaining = ::mf::api::folder::get_content::v1_2::ChunksRemaining;
 
     /**
      * API request "folder/get_content"

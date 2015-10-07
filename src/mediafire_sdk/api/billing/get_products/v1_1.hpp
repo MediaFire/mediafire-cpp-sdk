@@ -174,12 +174,12 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Recurring = Recurring;
-    using Trial = Trial;
-    using Activity = Activity;
-    using UsesCredits = UsesCredits;
-    using YearlyOnly = YearlyOnly;
-    using Legacy = Legacy;
+    using Recurring = ::mf::api::billing::get_products::v1_1::Recurring;
+    using Trial = ::mf::api::billing::get_products::v1_1::Trial;
+    using Activity = ::mf::api::billing::get_products::v1_1::Activity;
+    using UsesCredits = ::mf::api::billing::get_products::v1_1::UsesCredits;
+    using YearlyOnly = ::mf::api::billing::get_products::v1_1::YearlyOnly;
+    using Legacy = ::mf::api::billing::get_products::v1_1::Legacy;
 
     /**
      * API request "billing/get_products"

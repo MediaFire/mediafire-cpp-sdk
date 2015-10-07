@@ -89,7 +89,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Viewable = Viewable;
+    using Viewable = ::mf::api::notifications::get_cache::v0::Viewable;
 
     /**
      * API request "notifications/get_cache"

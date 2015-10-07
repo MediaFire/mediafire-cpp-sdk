@@ -96,8 +96,8 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using PaymentMethod = PaymentMethod;
-    using KeepCard = KeepCard;
+    using PaymentMethod = ::mf::api::billing::purchase_plan::v1_1::PaymentMethod;
+    using KeepCard = ::mf::api::billing::purchase_plan::v1_1::KeepCard;
 
     /**
      * API request "billing/purchase_plan"

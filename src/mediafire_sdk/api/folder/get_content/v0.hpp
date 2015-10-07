@@ -313,17 +313,17 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using ContentType = ContentType;
-    using OrderBy = OrderBy;
-    using OrderDirection = OrderDirection;
-    using Details = Details;
-    using Privacy = Privacy;
-    using FileDrop = FileDrop;
-    using PasswordProtected = PasswordProtected;
-    using SharedByUser = SharedByUser;
-    using SharedWithUser = SharedWithUser;
-    using ExplicitShare = ExplicitShare;
-    using Permission = Permission;
+    using ContentType = ::mf::api::folder::get_content::v0::ContentType;
+    using OrderBy = ::mf::api::folder::get_content::v0::OrderBy;
+    using OrderDirection = ::mf::api::folder::get_content::v0::OrderDirection;
+    using Details = ::mf::api::folder::get_content::v0::Details;
+    using Privacy = ::mf::api::folder::get_content::v0::Privacy;
+    using FileDrop = ::mf::api::folder::get_content::v0::FileDrop;
+    using PasswordProtected = ::mf::api::folder::get_content::v0::PasswordProtected;
+    using SharedByUser = ::mf::api::folder::get_content::v0::SharedByUser;
+    using SharedWithUser = ::mf::api::folder::get_content::v0::SharedWithUser;
+    using ExplicitShare = ::mf::api::folder::get_content::v0::ExplicitShare;
+    using Permission = ::mf::api::folder::get_content::v0::Permission;
 
     /**
      * API request "folder/get_content"

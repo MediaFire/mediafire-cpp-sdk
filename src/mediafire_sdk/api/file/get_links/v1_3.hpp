@@ -151,8 +151,8 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Recurring = Recurring;
-    using LinkType = LinkType;
+    using Recurring = ::mf::api::file::get_links::v1_3::Recurring;
+    using LinkType = ::mf::api::file::get_links::v1_3::LinkType;
 
     /**
      * API request "file/get_links"

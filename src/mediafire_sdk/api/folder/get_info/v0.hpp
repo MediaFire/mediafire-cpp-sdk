@@ -179,11 +179,11 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Details = Details;
-    using FileDrop = FileDrop;
-    using SharedByUser = SharedByUser;
-    using ExplicitShare = ExplicitShare;
-    using Permission = Permission;
+    using Details = ::mf::api::folder::get_info::v0::Details;
+    using FileDrop = ::mf::api::folder::get_info::v0::FileDrop;
+    using SharedByUser = ::mf::api::folder::get_info::v0::SharedByUser;
+    using ExplicitShare = ::mf::api::folder::get_info::v0::ExplicitShare;
+    using Permission = ::mf::api::folder::get_info::v0::Permission;
 
     /**
      * API request "folder/get_info"

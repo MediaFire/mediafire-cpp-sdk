@@ -72,7 +72,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Asynchronous = Asynchronous;
+    using Asynchronous = ::mf::api::file::restore::v0::Asynchronous;
 
     /**
      * API request "file/restore"

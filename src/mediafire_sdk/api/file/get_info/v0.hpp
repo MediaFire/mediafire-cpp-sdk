@@ -168,11 +168,11 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Privacy = Privacy;
-    using PasswordProtected = PasswordProtected;
-    using SharedByUser = SharedByUser;
-    using ExplicitShare = ExplicitShare;
-    using Permission = Permission;
+    using Privacy = ::mf::api::file::get_info::v0::Privacy;
+    using PasswordProtected = ::mf::api::file::get_info::v0::PasswordProtected;
+    using SharedByUser = ::mf::api::file::get_info::v0::SharedByUser;
+    using ExplicitShare = ::mf::api::file::get_info::v0::ExplicitShare;
+    using Permission = ::mf::api::file::get_info::v0::Permission;
 
     /**
      * API request "file/get_info"

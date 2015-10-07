@@ -173,9 +173,9 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using ContentType = ContentType;
-    using ShareLinkEnabled = ShareLinkEnabled;
-    using SyncToDesktopFilter = SyncToDesktopFilter;
+    using ContentType = ::mf::api::device::get_foreign_resources::v0::ContentType;
+    using ShareLinkEnabled = ::mf::api::device::get_foreign_resources::v0::ShareLinkEnabled;
+    using SyncToDesktopFilter = ::mf::api::device::get_foreign_resources::v0::SyncToDesktopFilter;
 
     /**
      * API request "device/get_foreign_resources"

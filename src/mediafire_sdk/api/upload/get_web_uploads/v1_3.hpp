@@ -136,9 +136,9 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Filter = Filter;
-    using Activity = Activity;
-    using Status = Status;
+    using Filter = ::mf::api::upload::get_web_uploads::v1_3::Filter;
+    using Activity = ::mf::api::upload::get_web_uploads::v1_3::Activity;
+    using Status = ::mf::api::upload::get_web_uploads::v1_3::Status;
 
     /**
      * API request "upload/get_web_uploads"

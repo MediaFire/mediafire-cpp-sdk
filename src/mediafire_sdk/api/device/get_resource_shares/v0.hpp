@@ -91,7 +91,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Permissions = Permissions;
+    using Permissions = ::mf::api::device::get_resource_shares::v0::Permissions;
 
     /**
      * API request "device/get_resource_shares"

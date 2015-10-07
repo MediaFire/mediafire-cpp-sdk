@@ -77,8 +77,8 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using ShareLinkStatus = ShareLinkStatus;
-    using CollectMetadata = CollectMetadata;
+    using ShareLinkStatus = ::mf::api::user::set_settings::v1_3::ShareLinkStatus;
+    using CollectMetadata = ::mf::api::user::set_settings::v1_3::CollectMetadata;
 
     /**
      * API request "user/set_settings"

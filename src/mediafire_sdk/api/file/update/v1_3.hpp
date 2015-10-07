@@ -69,7 +69,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Privacy = Privacy;
+    using Privacy = ::mf::api::file::update::v1_3::Privacy;
 
     /**
      * API request "file/update"

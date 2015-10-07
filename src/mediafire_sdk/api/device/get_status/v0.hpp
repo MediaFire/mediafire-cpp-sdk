@@ -72,7 +72,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using AsyncJobs = AsyncJobs;
+    using AsyncJobs = ::mf::api::device::get_status::v0::AsyncJobs;
 
     /**
      * API request "device/get_status"

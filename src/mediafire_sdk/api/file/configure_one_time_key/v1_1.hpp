@@ -80,8 +80,8 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using NofifyOwnerByEmail = NofifyOwnerByEmail;
-    using BurnAfterUse = BurnAfterUse;
+    using NofifyOwnerByEmail = ::mf::api::file::configure_one_time_key::v1_1::NofifyOwnerByEmail;
+    using BurnAfterUse = ::mf::api::file::configure_one_time_key::v1_1::BurnAfterUse;
 
     /**
      * API request "file/configure_one_time_key"

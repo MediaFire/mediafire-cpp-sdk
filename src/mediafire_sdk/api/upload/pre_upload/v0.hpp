@@ -147,12 +147,12 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Resumability = Resumability;
-    using ActionOnDuplicate = ActionOnDuplicate;
-    using StorageLimit = StorageLimit;
-    using DuplicateName = DuplicateName;
-    using UnitsReady = UnitsReady;
-    using KnownByCloud = KnownByCloud;
+    using Resumability = ::mf::api::upload::pre_upload::v0::Resumability;
+    using ActionOnDuplicate = ::mf::api::upload::pre_upload::v0::ActionOnDuplicate;
+    using StorageLimit = ::mf::api::upload::pre_upload::v0::StorageLimit;
+    using DuplicateName = ::mf::api::upload::pre_upload::v0::DuplicateName;
+    using UnitsReady = ::mf::api::upload::pre_upload::v0::UnitsReady;
+    using KnownByCloud = ::mf::api::upload::pre_upload::v0::KnownByCloud;
 
     /**
      * API request "upload/pre_upload"

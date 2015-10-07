@@ -204,16 +204,16 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using Resumable = Resumable;
-    using HashAlreadyInSystem = HashAlreadyInSystem;
-    using HashAlreadyInAccount = HashAlreadyInAccount;
-    using HashAlreadyInFolder = HashAlreadyInFolder;
-    using FilenameInFolder = FilenameInFolder;
-    using FileExistsWithDifferentHash = FileExistsWithDifferentHash;
-    using StorageLimitExceeded = StorageLimitExceeded;
-    using ActionOnDuplicate = ActionOnDuplicate;
-    using VersionControl = VersionControl;
-    using AllUnitsReady = AllUnitsReady;
+    using Resumable = ::mf::api::upload::check::v1_2::Resumable;
+    using HashAlreadyInSystem = ::mf::api::upload::check::v1_2::HashAlreadyInSystem;
+    using HashAlreadyInAccount = ::mf::api::upload::check::v1_2::HashAlreadyInAccount;
+    using HashAlreadyInFolder = ::mf::api::upload::check::v1_2::HashAlreadyInFolder;
+    using FilenameInFolder = ::mf::api::upload::check::v1_2::FilenameInFolder;
+    using FileExistsWithDifferentHash = ::mf::api::upload::check::v1_2::FileExistsWithDifferentHash;
+    using StorageLimitExceeded = ::mf::api::upload::check::v1_2::StorageLimitExceeded;
+    using ActionOnDuplicate = ::mf::api::upload::check::v1_2::ActionOnDuplicate;
+    using VersionControl = ::mf::api::upload::check::v1_2::VersionControl;
+    using AllUnitsReady = ::mf::api::upload::check::v1_2::AllUnitsReady;
 
     /**
      * API request "upload/check"

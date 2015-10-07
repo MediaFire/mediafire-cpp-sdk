@@ -80,7 +80,7 @@ class Request
 public:
 
     // Enums in class namespace for usage with templates
-    using AtHead = AtHead;
+    using AtHead = ::mf::api::file::get_versions::v1_3::AtHead;
 
     /**
      * API request "file/get_versions"
