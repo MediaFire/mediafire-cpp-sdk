@@ -1630,15 +1630,15 @@ def get_enums(api):
     return '\n' + '\n'.join(ret)
 
 
-def get_hpp_namespaced_enums(api):
+def get_hpp_namespaced_enums(api, namespace):
     '''Bring enums into the Request class namespace.'''
 
     if 'enums' not in api:
         return ''
     ret = []
     for (enum_cpp_name, enum_members) in parse_enum_params(api['enums']):
-        ret.append('    using ' + enum_cpp_name + ' = ' + enum_cpp_name +
-                   ';')
+        ret.append('    using ' + enum_cpp_name + ' = ' + namespace + '::' +
+                   enum_cpp_name + ';')
     comment = '\n    // Enums in class namespace for usage with templates\n'
     return comment + '\n'.join(ret) + '\n\n'
 
@@ -1781,7 +1781,9 @@ def create_templates(api, target_path):
 
     relative_pathname = '/'.join(base_parts) + '/' + filename
 
-    # namespace = "::".join(base_parts)
+    relative_namespace = "::".join(base_parts)
+    full_namespace = '::mf::' + '::'.join(path_parts_cpp_safe) + '::' + \
+                     version_str
 
     constants = {}
     api['constants'] = constants
@@ -1827,7 +1829,8 @@ def create_templates(api, target_path):
     replacements['__HPP_CTOR_ARGS__'] = get_hpp_ctor_args(api)
     replacements['__HPP_FILENAME__'] = version_str + '.hpp'
     replacements['__HPP_RELATIVE_FILENAME__'] = relative_pathname + '.hpp'
-    replacements['__HPP_NAMESPACED_ENUMS__'] = get_hpp_namespaced_enums(api)
+    replacements['__HPP_NAMESPACED_ENUMS__'] \
+        = get_hpp_namespaced_enums(api, full_namespace)
     replacements['__HPP_OPTIONAL_SETTERS__'] = get_hpp_optional_setters(api)
     replacements['__HPP_POST_DATA_TEMPLATE__'] \
         = get_hpp_post_data_template(api)
@@ -1839,7 +1842,7 @@ def create_templates(api, target_path):
     replacements['__IMPL_CTOR_DEFINITIONS__'] = get_impl_ctor_definitions(api)
     replacements['__NAMESPACE_BEGIN__'] = namespace_begin(base_parts)
     replacements['__NAMESPACE_END__'] = namespace_end(base_parts)
-    replacements['__NAMESPACE__'] = '::'.join(base_parts)
+    replacements['__NAMESPACE__'] = relative_namespace
     replacements['__NAMESPACE_DOCUMENTATION__'] \
         = get_namespace_documentation(path_parts_cpp_safe)
     replacements['__PR_OPT_ADT__'] = get_pr_opt_adt(api)
