@@ -93,7 +93,7 @@ public:
             auto event = std::move( data_.begin()->second );
             data_.erase(data_.begin());
 
-#ifdef MINGW32_LIMITED_ERRC
+#ifdef __MINGW32__
             std::errc errc_error = std::errc::interrupted;
 #else
             std::errc errc_error = std::errc::operation_canceled;
