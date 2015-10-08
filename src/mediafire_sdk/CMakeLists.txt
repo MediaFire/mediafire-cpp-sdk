@@ -50,10 +50,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL Windows)
     SET(PTHREADS_LIBRARY_DIR  "" CACHE PATH "Path to pthread library (Optional).")
 
     # MINGW
-    if(MINGW)
-        add_definitions(-DMINGW32_LIMITED_ERRC)
-    endif(MINGW)
-
     if(MSVC)
         # Asio uses a lot of deprecated functions internall
         add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
