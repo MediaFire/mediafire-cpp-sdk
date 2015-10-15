@@ -324,7 +324,7 @@ public:
         return UsesSessionTokenT<ApiFunctor>();
     }
 
-    virtual uint32_t TimeoutSeconds() const {return timeout_seconds_;}
+    virtual uint32_t TimeoutSeconds() const override {return timeout_seconds_;}
 
 private:
     ApiFunctor af_;

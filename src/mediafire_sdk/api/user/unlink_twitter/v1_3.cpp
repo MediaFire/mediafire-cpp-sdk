@@ -47,7 +47,7 @@ public:
 
     mf::http::SharedBuffer::Pointer GetPostData();
 
-    mf::api::RequestMethod GetRequestMethod() const
+    mf::api::RequestMethod GetRequestMethod() const override
     {
         return mf::api::RequestMethod::Post;
     }
