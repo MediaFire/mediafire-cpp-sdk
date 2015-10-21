@@ -14,6 +14,8 @@
 #include <utility>
 #include <iostream>
 
+#include "boost/mpl/vector/vector40.hpp"
+
 #include "boost/msm/back/state_machine.hpp"
 #include "boost/msm/front/state_machine_def.hpp"
 #include "boost/msm/front/euml/operator.hpp"
@@ -480,7 +482,7 @@ public:
     typedef HttpRequestMachine_ m;  // makes transition table cleaner
 
     // Transition table for HttpRequestMachine
-    struct transition_table : mpl::vector<
+    struct transition_table : mpl::vector31<
         //    Start           Event                   Next            Action                Guard                                  // NOLINT
         //  +---------------+-----------------------+---------------+---------------------+------------------------------------+   // NOLINT
         Row < Unstarted     , ConfigEvent           , Unstarted     , ConfigEventAction   , none                               >,  // NOLINT
