@@ -48,19 +48,19 @@ BOOST_AUTO_TEST_CASE(UTPollChanges)
                                    FolderGetInfoType, FileGetInfoType>;
 
     // Response types
-    using File = typename PollChangesType::File;
-    using Folder = typename PollChangesType::Folder;
-    using FolderInfo = typename PollChangesType::FolderInfo;
-    using FileInfo = typename PollChangesType::FileInfo;
+    using File = PollChangesType::File;
+    using Folder = PollChangesType::Folder;
+    using FolderInfo = PollChangesType::FolderInfo;
+    using FileInfo = PollChangesType::FileInfo;
 
     // Error types
     using DeviceGetStatusErrorType =
-            typename PollChangesType::DeviceGetStatusErrorType;
+            PollChangesType::DeviceGetStatusErrorType;
     using DeviceGetChangesErrorType =
-            typename PollChangesType::DeviceGetChangesErrorType;
-    using GetInfoFileErrorType = typename PollChangesType::FileGetInfoErrorType;
+            PollChangesType::DeviceGetChangesErrorType;
+    using GetInfoFileErrorType = PollChangesType::FileGetInfoErrorType;
     using GetInfoFolderErrorType =
-            typename PollChangesType::FolderGetInfoErrorType;
+            PollChangesType::FolderGetInfoErrorType;
 
     auto HandlePollChanges = [this, &io_service](
             uint32_t latest_device_revision,

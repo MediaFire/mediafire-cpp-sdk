@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(UTGetInfoFolder)
     using RequestType = GetInfoFolderType::RequestType;
     using ResponseType = GetInfoFolderType::ResponseType;
 
-    using GetInfoFolderErrorType = typename GetInfoFolderType::ErrorType;
+    using GetInfoFolderErrorType = GetInfoFolderType::ErrorType;
 
     GetInfoFolderType::CallbackType HandleGetInfoFolder =
             [this, &io_service](const ResponseType & response,

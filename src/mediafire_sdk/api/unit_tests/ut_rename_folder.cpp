@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(UTRenameFolder)
     using RequestType = RenameFolderType::RequestType;
     using ResponseType = RenameFolderType::ResponseType;
 
-    using RenameFolderErrorType = typename RenameFolderType::ErrorType;
+    using RenameFolderErrorType = RenameFolderType::ErrorType;
 
     RenameFolderType::CallbackType HandleRenameFolder =
     [this, &io_service](const ResponseType & response,

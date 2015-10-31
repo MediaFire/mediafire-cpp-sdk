@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(UTRenameFile)
     using RequestType = RenameFileType::RequestType;
     using ResponseType = RenameFileType::ResponseType;
 
-    using RenameFileErrorType = typename RenameFileType::ErrorType;
+    using RenameFileErrorType = RenameFileType::ErrorType;
 
     RenameFileType::CallbackType HandleRenameFile =
             [this, &io_service](const ResponseType & response,

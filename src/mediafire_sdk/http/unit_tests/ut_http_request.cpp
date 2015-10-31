@@ -641,7 +641,7 @@ bool TestPost()
             "\r\n"
         )});
 
-    server->Push( ExpectContentLength{shared_buffer->Size()} );
+    server->Push( ExpectContentLength{static_cast<size_t>(shared_buffer->Size())} );
 
     server->Push(expect_server_test::SendMessage(
             "HTTP/1.1 200 OK\r\n"
@@ -747,7 +747,7 @@ bool TestPostPipe()
             "\r\n"
         )});
 
-    server->Push( ExpectContentLength{shared_buffer->Size() * repetitions} );
+    server->Push( ExpectContentLength{static_cast<size_t>(shared_buffer->Size() * repetitions)} );
 
     server->Push(expect_server_test::SendMessage(
             "HTTP/1.1 200 OK\r\n"
