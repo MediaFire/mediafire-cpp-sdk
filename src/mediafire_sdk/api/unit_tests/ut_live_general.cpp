@@ -1008,7 +1008,8 @@ BOOST_AUTO_TEST_CASE(FileMove)
 
 BOOST_AUTO_TEST_CASE(FileRename)
 {
-    api::file::update::Request request(globals::test_quickkey2);
+    auto request
+            = api::file::update::Request::FromQuickKey(globals::test_quickkey2);
 
     std::string new_name(ut::RandomAlphaNum(20));
 
@@ -1032,7 +1033,8 @@ BOOST_AUTO_TEST_CASE(FileRename)
 
 BOOST_AUTO_TEST_CASE(FileMakePrivate)
 {
-    api::file::update::Request request(globals::test_quickkey2);
+    auto request
+            = api::file::update::Request::FromQuickKey(globals::test_quickkey2);
 
     request.SetPrivacy(api::file::update::Privacy::Private);
 

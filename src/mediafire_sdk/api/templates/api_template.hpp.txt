@@ -87,7 +87,7 @@ __HPP_OPTIONAL_SETTERS__    // Remaining functions are for use by API library on
     /** Requester expected method. */
     std::string Url(const std::string & hostname) const;
 
-__HPP_POST_DATA_TEMPLATE____HPP_SESSION_TOKEN_TEMPLATE__private:
+__HPP_POST_DATA_TEMPLATE____HPP_SESSION_TOKEN_TEMPLATE__private:__PRIVATE_HPP_CTORS__
     std::shared_ptr<Impl> impl_;
 };
 }  // namespace __VERSION__

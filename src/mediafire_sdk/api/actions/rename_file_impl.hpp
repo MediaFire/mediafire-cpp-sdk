@@ -84,7 +84,8 @@ void RenameFile<TRequest>::CoroutineBody(pull_type & yield)
         Resume();
     };
 
-    request_ = stm_->Call(RequestType(quick_key_), HandleFileGetInfo);
+    request_ = stm_->Call(RequestType::FromQuickKey(quick_key_),
+                          HandleFileGetInfo);
 
     if (cancelled_)
         request_->Cancel();

@@ -46,6 +46,7 @@ set(API_TEMPLATE_GENERATED_SOURCES
     file/restore/v1_3.cpp
     file/update/v0.cpp
     file/update/v1_3.cpp
+    file/update/v1_5.cpp
     file/update_file/v0.cpp
     file/update_file/v1_3.cpp
     folder/copy/v0.cpp
@@ -180,6 +181,7 @@ set(API_TEMPLATE_GENERATED_HEADERS
     file/update.hpp
     file/update/v0.hpp
     file/update/v1_3.hpp
+    file/update/v1_5.hpp
     file/update_file.hpp
     file/update_file/v0.hpp
     file/update_file/v1_3.hpp
