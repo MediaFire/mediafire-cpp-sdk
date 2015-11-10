@@ -889,7 +889,8 @@ def get_named_hpp_ctor(api, cpp_variable_names, make_doc, class_name,
     if make_doc is True:
         ret = ret + doc + '\n'
 
-    ret = (ret + '    static ' + class_name + ' ' + ctor_name + '(' + args + ');')
+    ret = (ret + '    static ' + class_name + ' ' + ctor_name +
+           '(' + args + ');')
 
     return ret
 
@@ -906,7 +907,6 @@ def get_hpp_ctors(api):
             if 'description' in additional_ctor:
                 description = additional_ctor['description']
 
-
             if 'name' in additional_ctor:
                 ctors.append(get_named_hpp_ctor(api, cpp_variable_names,
                                                 True, 'Request', description,
@@ -914,6 +914,9 @@ def get_hpp_ctors(api):
             else:
                 ctors.append(get_hpp_ctor(api, cpp_variable_names,
                                           True, 'Request', description))
+                if len(cpp_variable_names) == 0:
+                    add_default_ctor = False
+
     if add_default_ctor:
         ctors.append(get_hpp_ctor(api, get_default_ctor_cpp_names(api), True,
                                   'Request', None))
