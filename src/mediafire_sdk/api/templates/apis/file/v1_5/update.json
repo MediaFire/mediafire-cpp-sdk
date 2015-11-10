@@ -29,8 +29,6 @@
             ]
         }
     ],
-    "input_params": [
-    ],
     "constructors": [
         {
             "name": "FromQuickKey",

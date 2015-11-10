@@ -11,6 +11,7 @@
 #include "check/v0.hpp"
 #include "check/v1_2.hpp"
 #include "check/v1_3.hpp"
+#include "check/v1_5.hpp"
 
 namespace mf {
 namespace api {
@@ -20,7 +21,7 @@ namespace upload {
 namespace check {
 
 // Default version
-using namespace v1_3;  // NOLINT
+using namespace v1_5;  // NOLINT
 
 }  // namespace check
 }  // namespace upload
