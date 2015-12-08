@@ -96,8 +96,15 @@ void GetForeignChangesDevice<TDeviceGetForeignChangesRequest>::CoroutineBody(
                 // HACK around the API including "trash" inside
                 // updated_folders
                 for (const auto & folder : data.updated_folders)
-                    if (folder.folderkey != "trash")
+                {
+                    bool is_trash = folder.folderkey == "trash";
+                    bool is_in_trash = folder.parent_folderkey &&
+                        *folder.parent_folderkey == "trash";
+                    if (!is_trash && !is_in_trash)
                         updated_folders_.push_back(folder);
+                    if (is_in_trash)
+                        deleted_folders_.push_back(folder);
+                }
 
                 deleted_files_.insert(std::end(deleted_files_),
                                       std::begin(data.deleted_files),

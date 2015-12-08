@@ -66,16 +66,23 @@ void PollChanges<TDeviceGetStatusRequest,
     get_changes_errors_ = get_changes_errors;
 
     updated_files_ = updated_files;
+    deleted_files_ = deleted_files;
+    deleted_folders_ = deleted_folders;
 
     // updated_folders_ = updated_folders;
     // Hack around updated_folders containing trash folder key
+    // Also hack around deleted folders showing up in updates
     // -_-
     for (const auto & updated_folder : updated_folders)
-        if (updated_folder.folderkey != "trash")
+    {
+        bool is_trash = updated_folder.folderkey == "trash";
+        bool is_in_trash = updated_folder.parent_folderkey &&
+                *updated_folder.parent_folderkey == "trash";
+        if (!is_trash && !is_in_trash)
             updated_folders_.push_back(updated_folder);
-
-    deleted_files_ = deleted_files;
-    deleted_folders_ = deleted_folders;
+        if (is_in_trash)
+            deleted_folders_.push_back(updated_folder);
+    }
 
     Resume();
 }
