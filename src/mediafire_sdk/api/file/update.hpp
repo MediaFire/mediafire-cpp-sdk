@@ -10,6 +10,7 @@
 
 #include "update/v0.hpp"
 #include "update/v1_3.hpp"
+#include "update/v1_5.hpp"
 
 namespace mf {
 namespace api {
@@ -19,7 +20,7 @@ namespace file {
 namespace update {
 
 // Default version
-using namespace v1_3;  // NOLINT
+using namespace v1_5;  // NOLINT
 
 }  // namespace update
 }  // namespace file

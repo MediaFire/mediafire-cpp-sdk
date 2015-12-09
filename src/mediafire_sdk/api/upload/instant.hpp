@@ -10,6 +10,7 @@
 
 #include "instant/v0.hpp"
 #include "instant/v1_3.hpp"
+#include "instant/v1_5.hpp"
 
 namespace mf {
 namespace api {
@@ -19,7 +20,7 @@ namespace upload {
 namespace instant {
 
 // Default version
-using namespace v1_3;  // NOLINT
+using namespace v1_5;  // NOLINT
 
 }  // namespace instant
 }  // namespace upload

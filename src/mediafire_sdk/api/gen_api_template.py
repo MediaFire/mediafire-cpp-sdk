@@ -195,23 +195,6 @@ def parse_input_params(input_param_array, api):
     return ret
 
 
-def parse_additional_input_params(input_param_array, api):
-    ret = list()
-    for input_params in input_param_array:
-        cpp_type = safe_json_get(input_params, "cpp_type")
-        cpp_name = safe_json_get(input_params, "cpp_name")
-        api_path = safe_json_get(input_params, "api_path")
-        if 'http_method' in input_params:
-            http_method = input_params['http_method']
-        elif 'delivery_method' in api:
-            # Use selected default
-            http_method = api['delivery_method']
-        else:
-            http_method = default_http_input_method
-        ret.append((cpp_type, cpp_name, api_path, http_method))
-    return ret
-
-
 def parse_enum_params(enum_array):
     ret = list()
     for enum_json in enum_array:
@@ -645,6 +628,36 @@ def get_cpp_ctor_args(api):
     return '\n'.join(ret)
 
 
+def get_named_cpp_ctor(api, cpp_variable_names, ctor_name):
+    '''Additional CPP Constructor definition.'''
+
+    input_args = ''
+    lines = []
+    for cpp_name in cpp_variable_names:
+        cpp_type, api_path, http_method, description = \
+                                    get_input_cpp_variable_info(api, cpp_name)
+        lines.append(cpp_type + ' ' + cpp_name)
+    if len(lines) > 0:
+        input_args = '\n        ' + ',\n        '.join(lines) + '\n    '
+
+    ret = ''
+    ret = ret + 'Request Request::' + ctor_name \
+        + '(' + input_args + ')\n'
+
+    ret = ret + '{\n'
+    ret = ret + '    Request request;\n'
+
+    for cpp_name in cpp_variable_names:
+        cpp_type, api_path, http_method, description = \
+                                    get_input_cpp_variable_info(api, cpp_name)
+        ret = ret + '    request.impl_->' + cpp_name + '_' + ' = std::move(' \
+            + cpp_name + ');\n'
+
+    ret = ret + '    return request;\n'
+    ret = ret + '}\n'
+    return ret
+
+
 def get_cpp_ctor(api, cpp_variable_names):
     '''Additional CPP Constructor definition.'''
 
@@ -678,15 +691,47 @@ def get_default_ctor_cpp_names(api):
     return ret
 
 
+def requires_default_ctor(api):
+    if 'constructors' in api:
+        for additional_ctor in api['constructors']:
+            if 'name' in additional_ctor:
+                return True
+    return False
+
+
+def requires_private_default_ctor(api):
+    if requires_default_ctor(api):
+        for additional_ctor in api['constructors']:
+            if 'name' not in additional_ctor and \
+               len(additional_ctor['cpp_variable_names']) == 0:
+                return False
+        return True
+    return False
+
+
 def get_cpp_ctors(api):
     '''Constructors for class definition.'''
+    add_default_ctor = True
+    ctors = []
+
     if 'constructors' in api:
-        ctors = []
+        add_default_ctor = requires_default_ctor(api)
         for additional_ctor in api['constructors']:
             cpp_variable_names = additional_ctor['cpp_variable_names']
-            ctors.append(get_cpp_ctor(api, cpp_variable_names))
-    else:
-        ctors = [get_cpp_ctor(api, get_default_ctor_cpp_names(api))]
+
+            # Empty ctor is default so we don't have to add it later.
+            if len(cpp_variable_names) == 0:
+                add_default_ctor = False
+
+            if 'name' in additional_ctor:
+                ctors.append(get_named_cpp_ctor(api, cpp_variable_names,
+                                                additional_ctor['name']))
+            else:
+                ctors.append(get_cpp_ctor(api, cpp_variable_names))
+
+    if add_default_ctor:
+        ctors.append(get_cpp_ctor(api, get_default_ctor_cpp_names(api)))
+
     return '\n\n'.join(ctors)
 
 
@@ -725,7 +770,8 @@ def get_impl_ctor_definitions(api):
         ctors = []
         for additional_ctor in api['constructors']:
             cpp_variable_names = additional_ctor['cpp_variable_names']
-            ctors.append(get_impl_ctor(api, cpp_variable_names))
+            if 'name' not in additional_ctor:
+                ctors.append(get_impl_ctor(api, cpp_variable_names))
     else:
         ctors = [get_impl_ctor(api, get_default_ctor_cpp_names(api))]
     return '\n\n'.join(ctors)
@@ -754,30 +800,6 @@ def get_hpp_ctor_args(api):
         ret.append('\n            ' + ',\n            '.join(lines) +
                    '\n        ')
     return '\n'.join(ret)
-
-
-def get_hpp_ctor_documentation(api):
-    ret = '/**\n'
-    ret = ret + '     * API request "' + get_api_action_path(api) + '"\n'
-
-    if 'input_params' in api:
-        ret = ret + '     *\n'
-        for input_params in api['input_params']:
-            # cpp_type = safe_json_get(input_params, "cpp_type")
-            cpp_name = safe_json_get(input_params, "cpp_name")
-            api_path = safe_json_get(input_params, "api_path")
-
-            if 'description' in input_params:
-                description = input_params['description']
-            else:
-                description = 'API parameter "' + api_path + '"'
-
-            ret = ret + format_parameter_documentation(1, cpp_name,
-                                                       description)
-
-    ret = ret + '     */'
-
-    return ret
 
 
 def get_input_cpp_variable_info(api, cpp_name_to_find):
@@ -833,32 +855,100 @@ def get_hpp_ctor(api, cpp_variable_names, make_doc, class_name,
     return ret
 
 
+def get_named_hpp_ctor(api, cpp_variable_names, make_doc, class_name,
+                       ctor_description, ctor_name):
+    doc = '    /**\n'
+    doc = doc + '     * API request "' + get_api_action_path(api) + '"\n'
+
+    if ctor_description is not None:
+        doc = doc + '     *\n'
+        doc = doc + '     * ' + ctor_description + '\n'
+
+    if len(cpp_variable_names) > 0:
+        doc = doc + '     *\n'
+
+    for cpp_name in cpp_variable_names:
+        cpp_type, api_path, http_method, description = \
+                                    get_input_cpp_variable_info(api, cpp_name)
+
+        if description is None:
+            description = 'API parameter "' + api_path + '"'
+
+        doc = doc + format_parameter_documentation(1, cpp_name, description)
+    doc = doc + '     */'
+
+    args = ''
+    lines = []
+    for cpp_name in cpp_variable_names:
+        cpp_type, api_path, http_method, description = \
+                                    get_input_cpp_variable_info(api, cpp_name)
+        lines.append(cpp_type + ' ' + cpp_name)
+        args = ('\n            ' + ',\n            '.join(lines) +
+                '\n        ')
+    ret = ''
+    if make_doc is True:
+        ret = ret + doc + '\n'
+
+    ret = (ret + '    static ' + class_name + ' ' + ctor_name +
+           '(' + args + ');')
+
+    return ret
+
+
 def get_hpp_ctors(api):
+    ctors = []
+    add_default_ctor = True
     if 'constructors' in api:
-        ctors = []
+        add_default_ctor = requires_default_ctor(api) and \
+                           not requires_private_default_ctor(api)
         for additional_ctor in api['constructors']:
             cpp_variable_names = additional_ctor['cpp_variable_names']
             description = None
             if 'description' in additional_ctor:
                 description = additional_ctor['description']
-            ctors.append(get_hpp_ctor(api, cpp_variable_names,
-                                      True, 'Request', description))
-    else:
-        ctors = [get_hpp_ctor(api, get_default_ctor_cpp_names(api), True,
-                              'Request', None)]
+
+            if 'name' in additional_ctor:
+                ctors.append(get_named_hpp_ctor(api, cpp_variable_names,
+                                                True, 'Request', description,
+                                                additional_ctor['name']))
+            else:
+                ctors.append(get_hpp_ctor(api, cpp_variable_names,
+                                          True, 'Request', description))
+                if len(cpp_variable_names) == 0:
+                    add_default_ctor = False
+
+    if add_default_ctor:
+        ctors.append(get_hpp_ctor(api, get_default_ctor_cpp_names(api), True,
+                                  'Request', None))
     return '\n\n'.join(ctors)
 
 
+def get_private_hpp_ctors(api):
+    if requires_private_default_ctor(api):
+        ctors = [get_hpp_ctor(api, get_default_ctor_cpp_names(api), False,
+                              'Request', None)]
+        return '\n' + '\n\n'.join(ctors)
+    else:
+        return ''
+
+
 def get_impl_ctor_declarations(api):
+    ctors = []
+    add_default_ctor = True
+
     if 'constructors' in api:
-        ctors = []
+        add_default_ctor = False
+
         for additional_ctor in api['constructors']:
             cpp_variable_names = additional_ctor['cpp_variable_names']
-            ctors.append(get_hpp_ctor(api, cpp_variable_names,
-                                      False, 'Impl', None))
-    else:
-        ctors = [get_hpp_ctor(api, get_default_ctor_cpp_names(api), False,
-                              'Impl', None)]
+
+            if 'name' not in additional_ctor:
+                ctors.append(get_hpp_ctor(api, cpp_variable_names,
+                                          False, 'Impl', None))
+
+    if add_default_ctor:
+        ctors.append(get_hpp_ctor(api, get_default_ctor_cpp_names(api), False,
+                                  'Impl', None))
     return '\n\n'.join(ctors)
 
 
@@ -1826,6 +1916,7 @@ def create_templates(api, target_path):
     replacements['__ENUMS__'] = get_enums(api)
     replacements['__EXPLICIT__'] = get_explicit(api)
     replacements['__HPP_CTORS__'] = get_hpp_ctors(api)
+    replacements['__PRIVATE_HPP_CTORS__'] = get_private_hpp_ctors(api)
     replacements['__HPP_CTOR_ARGS__'] = get_hpp_ctor_args(api)
     replacements['__HPP_FILENAME__'] = version_str + '.hpp'
     replacements['__HPP_RELATIVE_FILENAME__'] = relative_pathname + '.hpp'
@@ -2121,6 +2212,7 @@ def api_template_additional_constructor_analyser():
     ja.add_field('cpp_variable_names',
                  validator=additional_variable_names_validator, required=True)
     ja.add_field('description')
+    ja.add_field('name')
 
     return ja
 

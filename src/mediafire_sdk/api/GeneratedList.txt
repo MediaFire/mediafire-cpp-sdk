@@ -46,6 +46,7 @@ set(API_TEMPLATE_GENERATED_SOURCES
     file/restore/v1_3.cpp
     file/update/v0.cpp
     file/update/v1_3.cpp
+    file/update/v1_5.cpp
     file/update_file/v0.cpp
     file/update_file/v1_3.cpp
     folder/copy/v0.cpp
@@ -69,9 +70,11 @@ set(API_TEMPLATE_GENERATED_SOURCES
     upload/check/v0.cpp
     upload/check/v1_2.cpp
     upload/check/v1_3.cpp
+    upload/check/v1_5.cpp
     upload/get_web_uploads/v1_3.cpp
     upload/instant/v0.cpp
     upload/instant/v1_3.cpp
+    upload/instant/v1_5.cpp
     upload/poll_upload/v0.cpp
     upload/poll_upload/v1_3.cpp
     upload/pre_upload/v0.cpp
@@ -180,6 +183,7 @@ set(API_TEMPLATE_GENERATED_HEADERS
     file/update.hpp
     file/update/v0.hpp
     file/update/v1_3.hpp
+    file/update/v1_5.hpp
     file/update_file.hpp
     file/update_file/v0.hpp
     file/update_file/v1_3.hpp
@@ -222,11 +226,13 @@ set(API_TEMPLATE_GENERATED_HEADERS
     upload/check/v0.hpp
     upload/check/v1_2.hpp
     upload/check/v1_3.hpp
+    upload/check/v1_5.hpp
     upload/get_web_uploads.hpp
     upload/get_web_uploads/v1_3.hpp
     upload/instant.hpp
     upload/instant/v0.hpp
     upload/instant/v1_3.hpp
+    upload/instant/v1_5.hpp
     upload/poll_upload.hpp
     upload/poll_upload/v0.hpp
     upload/poll_upload/v1_3.hpp

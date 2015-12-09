@@ -1,0 +1,288 @@
+{
+    "api": "/api/1.5/upload/check",
+    "version": "1.5",
+    "enums": [
+        {
+            "cpp_name": "Resumable",
+            "members": [
+                {
+                    "cpp_name": "NotResumable",
+                    "api_value": "no"
+                },
+                {
+                    "cpp_name": "Resumable",
+                    "api_value": "yes"
+                }
+            ]
+        },
+        {
+            "cpp_name": "HashAlreadyInSystem",
+            "members": [
+                {
+                    "cpp_name": "No",
+                    "api_value": "no"
+                },
+                {
+                    "cpp_name": "Yes",
+                    "api_value": "yes"
+                }
+            ]
+        },
+        {
+            "cpp_name": "HashAlreadyInAccount",
+            "members": [
+                {
+                    "cpp_name": "HashNewToAccount",
+                    "api_value": "no"
+                },
+                {
+                    "cpp_name": "HashExistsInAccount",
+                    "api_value": "yes"
+                }
+            ]
+        },
+        {
+            "cpp_name": "HashAlreadyInFolder",
+            "members": [
+                {
+                    "cpp_name": "HashNewToFolder",
+                    "api_value": "no"
+                },
+                {
+                    "cpp_name": "HashExistsInFolder",
+                    "api_value": "yes"
+                }
+            ]
+        },
+        {
+            "cpp_name": "FilenameInFolder",
+            "members": [
+                {
+                    "cpp_name": "No",
+                    "api_value": "no"
+                },
+                {
+                    "cpp_name": "Yes",
+                    "api_value": "yes"
+                }
+            ]
+        },
+        {
+            "cpp_name": "FileExistsWithDifferentHash",
+            "members": [
+                {
+                    "cpp_name": "No",
+                    "api_value": "no"
+                },
+                {
+                    "cpp_name": "Yes",
+                    "api_value": "yes"
+                }
+            ]
+        },
+        {
+            "cpp_name": "StorageLimitExceeded",
+            "members": [
+                {
+                    "cpp_name": "No",
+                    "api_value": "no"
+                },
+                {
+                    "cpp_name": "Yes",
+                    "api_value": "yes"
+                }
+            ]
+        },
+        {
+            "cpp_name": "ActionOnDuplicate",
+            "members": [
+                {
+                    "cpp_name": "Skip",
+                    "api_value": "skip"
+                },
+                {
+                    "cpp_name": "Keep",
+                    "api_value": "keep"
+                },
+                {
+                    "cpp_name": "Replace",
+                    "api_value": "replace"
+                }
+            ]
+        },
+        {
+            "cpp_name": "VersionControl",
+            "members": [
+                {
+                    "cpp_name": "KeepRevision",
+                    "api_value": "keep_revision"
+                },
+                {
+                    "cpp_name": "Required",
+                    "api_value": "none"
+                }
+            ]
+        },
+        {
+            "cpp_name": "AllUnitsReady",
+            "members": [
+                {
+                    "cpp_name": "No",
+                    "api_value": "no"
+                },
+                {
+                    "cpp_name": "Yes",
+                    "api_value": "yes"
+                }
+            ]
+        }
+    ],
+    "return_structs": [
+        {
+            "cpp_name": "ResumableData",
+            "members": [
+                {
+                    "cpp_type": "uint32_t",
+                    "cpp_name": "number_of_units",
+                    "api_path": "number_of_units"
+                },
+                {
+                    "cpp_type": "AllUnitsReady",
+                    "cpp_name": "all_units_ready",
+                    "api_path": "all_units_ready",
+                    "default_value": "No"
+                },
+                {
+                    "cpp_type": "uint64_t",
+                    "cpp_name": "unit_size",
+                    "api_path": "unit_size"
+                },
+                {
+                    "cpp_type": "uint32_t",
+                    "cpp_name": "bitmap_count",
+                    "api_path": "bitmap.count",
+                    "optional": true
+                },
+                {
+                    "cpp_type": "uint16_t",
+                    "cpp_name": "words",
+                    "api_path": "bitmap.words",
+                    "json_type": "array"
+                },
+                {
+                    "cpp_type": "std::string",
+                    "cpp_name": "upload_key",
+                    "api_path": "upload_key",
+                    "optional": true
+                }
+            ]
+        }
+    ],
+    "input_params": [
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "filename",
+            "api_path": "filename"
+        }
+    ],
+    "optional_input_params": [
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "hash",
+            "api_path": "hash"
+        },
+        {
+            "cpp_type": "uint64_t",
+            "cpp_name": "filesize",
+            "api_path": "size"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "target_parent_folderkey",
+            "api_path": "folder_key"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "target_filedrop",
+            "api_path": "filedrop_key"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "path",
+            "api_path": "path"
+        },
+        {
+            "cpp_type": "Resumable",
+            "cpp_name": "resumable",
+            "api_path": "resumable"
+        }
+    ],
+    "return_params": [
+        {
+            "cpp_type": "HashAlreadyInSystem",
+            "cpp_name": "hash_exists",
+            "api_path": "response.hash_exists",
+            "default_value": "No"
+        },
+        {
+            "cpp_type": "HashAlreadyInAccount",
+            "cpp_name": "hash_in_account",
+            "api_path": "response.in_account",
+            "default_value": "HashNewToAccount"
+        },
+        {
+            "cpp_type": "HashAlreadyInFolder",
+            "cpp_name": "hash_in_folder",
+            "api_path": "response.in_folder",
+            "default_value": "HashNewToFolder"
+        },
+        {
+            "cpp_type": "FilenameInFolder",
+            "cpp_name": "file_exists",
+            "api_path": "response.file_exists",
+            "default_value": "No"
+        },
+        {
+            "cpp_type": "FileExistsWithDifferentHash",
+            "cpp_name": "hash_different",
+            "api_path": "response.different_hash",
+            "default_value": "No"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "duplicate_quickkey",
+            "api_path": "response.duplicate_quickkey",
+            "optional": true
+        },
+        {
+            "cpp_type": "uint64_t",
+            "cpp_name": "available_space",
+            "api_path": "response.available_space",
+            "default_value": "0"
+        },
+        {
+            "cpp_type": "uint64_t",
+            "cpp_name": "used_storage_size",
+            "api_path": "response.used_storage_size",
+            "default_value": "0"
+        },
+        {
+            "cpp_type": "uint64_t",
+            "cpp_name": "storage_limit",
+            "api_path": "response.storage_limit",
+            "default_value": "0"
+        },
+        {
+            "cpp_type": "StorageLimitExceeded",
+            "cpp_name": "storage_limit_exceeded",
+            "api_path": "response.storage_limit_exceeded",
+            "default_value": "No"
+        },
+        {
+            "cpp_type": "ResumableData",
+            "cpp_name": "resumable",
+            "api_path": "response.resumable_upload",
+            "optional": true
+        }
+    ]
+}

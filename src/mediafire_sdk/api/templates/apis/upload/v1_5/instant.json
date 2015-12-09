@@ -1,0 +1,94 @@
+{
+    "api": "/api/1.5/upload/instant",
+    "version": "1.5",
+    "enums": [
+        {
+            "cpp_name": "ActionOnDuplicate",
+            "members": [
+                {
+                    "cpp_name": "Skip",
+                    "api_value": "skip"
+                },
+                {
+                    "cpp_name": "Keep",
+                    "api_value": "keep"
+                },
+                {
+                    "cpp_name": "Replace",
+                    "api_value": "replace"
+                }
+            ]
+        }
+    ],
+    "input_params": [
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "filename",
+            "api_path": "filename"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "hash",
+            "api_path": "hash"
+        },
+        {
+            "cpp_type": "uint64_t",
+            "cpp_name": "filesize",
+            "api_path": "size"
+        }
+    ],
+    "optional_input_params": [
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "quickkey",
+            "api_path": "quickkey"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "target_parent_folderkey",
+            "api_path": "folder_key"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "target_filedrop",
+            "api_path": "filedrop_key"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "target_path",
+            "api_path": "path"
+        },
+        {
+            "cpp_type": "boost::posix_time::ptime",
+            "cpp_name": "mtime",
+            "api_path": "mtime"
+        },
+        {
+            "cpp_type": "ActionOnDuplicate",
+            "cpp_name": "action_on_duplicate",
+            "api_path": "action_on_duplicate"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "previous_hash",
+            "api_path": "previous_hash"
+        }
+    ],
+    "return_params": [
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "quickkey",
+            "api_path": "response.quickkey"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "filename",
+            "api_path": "response.filename"
+        },
+        {
+            "cpp_type": "uint32_t",
+            "cpp_name": "new_device_revision",
+            "api_path": "response.new_device_revision"
+        }
+    ]
+}
