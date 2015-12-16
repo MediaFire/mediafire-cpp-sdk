@@ -51,6 +51,7 @@ set(API_TEMPLATE_GENERATED_SOURCES
     file/update_file/v1_3.cpp
     folder/copy/v0.cpp
     folder/create/v0.cpp
+    folder/create/v1_5.cpp
     folder/folder_delete/v0.cpp
     folder/get_content/v0.cpp
     folder/get_content/v1_2.cpp
@@ -191,6 +192,7 @@ set(API_TEMPLATE_GENERATED_HEADERS
     folder/copy/v0.hpp
     folder/create.hpp
     folder/create/v0.hpp
+    folder/create/v1_5.hpp
     folder/folder_delete.hpp
     folder/folder_delete/v0.hpp
     folder/get_content.hpp
