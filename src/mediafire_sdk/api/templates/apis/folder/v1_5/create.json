@@ -76,7 +76,14 @@
         {
             "cpp_type": "std::string",
             "cpp_name": "folderkey",
-            "api_path": "response.folder_key"
+            "api_path": "response.folderkey",
+            "optional": true
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "folder_key",
+            "api_path": "response.folder_key",
+            "optional": true
         },
         {
             "cpp_type": "std::string",

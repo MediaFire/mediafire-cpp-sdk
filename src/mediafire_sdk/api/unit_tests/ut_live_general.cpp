@@ -234,9 +234,11 @@ BOOST_AUTO_TEST_CASE(CreateFolder)
 
                  Success();
 
-                 globals::test_folderkey = response_data.folderkey;
+                 BOOST_REQUIRE(response_data.folder_key);
 
-                 BOOST_CHECK(!response_data.folderkey.empty());
+                 globals::test_folderkey = *response_data.folder_key;
+
+                 BOOST_CHECK(!response_data.folder_key->empty());
              }
          });
 
@@ -262,9 +264,11 @@ BOOST_AUTO_TEST_CASE(CreateFolder2)
 
                  Success();
 
-                 globals::test_folderkey2 = response_data.folderkey;
+                 BOOST_REQUIRE(response_data.folder_key);
 
-                 BOOST_CHECK(!response_data.folderkey.empty());
+                 globals::test_folderkey2 = *response_data.folder_key;
+
+                 BOOST_CHECK(!response_data.folder_key->empty());
              }
          });
 
@@ -1474,9 +1478,11 @@ BOOST_AUTO_TEST_CASE(CreateFolderUser2)
 
                  Success();
 
-                 globals::foreign_folderkey = response_data.folderkey;
+                 BOOST_REQUIRE(response_data.folder_key);
 
-                 BOOST_CHECK(!response_data.folderkey.empty());
+                 globals::foreign_folderkey = *response_data.folder_key;
+
+                 BOOST_CHECK(!response_data.folder_key->empty());
              }
          });
 

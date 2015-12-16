@@ -100,14 +100,29 @@ void Impl::ParseResponse( Response * response )
     // For uniformity for code generation with the other content parsers.
     ResponseData * response_data_ptr = &response_data;
 
-    // create_content_parse_single required
-    if ( ! GetIfExists(
-            response->pt,
-            "response.folder_key",
-            &response_data_ptr->folderkey ) )
-        return_error(
-            mf::api::api_code::ContentInvalidData,
-            "missing \"response.folder_key\"");
+    // create_content_parse_single optional no default
+    {
+        std::string optarg;
+        if ( GetIfExists(
+                response->pt,
+                "response.folderkey",
+                &optarg) )
+        {
+            response_data_ptr->folderkey = optarg;
+        }
+    }
+
+    // create_content_parse_single optional no default
+    {
+        std::string optarg;
+        if ( GetIfExists(
+                response->pt,
+                "response.folder_key",
+                &optarg) )
+        {
+            response_data_ptr->folder_key = optarg;
+        }
+    }
 
     // create_content_parse_single required
     if ( ! GetIfExists(

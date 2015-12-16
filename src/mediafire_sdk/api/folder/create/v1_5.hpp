@@ -59,8 +59,11 @@ enum class Privacy
 class ResponseData
 {
 public:
+    /** API response field "response.folderkey" */
+    boost::optional<std::string> folderkey;
+
     /** API response field "response.folder_key" */
-    std::string folderkey;
+    boost::optional<std::string> folder_key;
 
     /** API response field "response.upload_key" */
     std::string uploadkey;
