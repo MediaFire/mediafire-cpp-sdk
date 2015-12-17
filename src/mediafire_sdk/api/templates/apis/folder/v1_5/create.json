@@ -1,0 +1,114 @@
+{
+    "api": "/api/1.5/folder/create",
+    "version": "1.5",
+    "default_version": true,
+    "enums": [
+    {
+        "cpp_name": "OnNameCollision",
+        "members": [
+        {
+            "cpp_name": "Rename",
+            "api_value": "keep"
+        },
+        {
+            "cpp_name": "ReturnExistingFolderkey",
+            "api_value": "replace"
+        }
+        ]
+    },
+    {
+        "cpp_name": "FileDrop",
+        "members": [
+        {
+            "cpp_name": "Disabled",
+            "api_value": "no"
+        },
+        {
+            "cpp_name": "Enabled",
+            "api_value": "yes"
+        }
+        ]
+    },
+    {
+        "cpp_name": "Privacy",
+        "members": [
+        {
+            "cpp_name": "Public",
+            "api_value": "public"
+        },
+        {
+            "cpp_name": "Private",
+            "api_value": "private"
+        }
+        ]
+    }
+    ],
+        "input_params": [
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "foldername",
+            "api_path": "foldername"
+        }
+    ],
+        "optional_input_params": [
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "parent_folderkey",
+            "api_path": "parent_key"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "parent_path",
+            "api_path": "parent_path"
+        },
+        {
+            "cpp_type": "boost::posix_time::ptime",
+            "cpp_name": "mtime",
+            "api_path": "mtime"
+        },
+        {
+            "cpp_type": "OnNameCollision",
+            "cpp_name": "rename_on_name_collision",
+            "api_path": "action_on_duplicate"
+        }
+    ],
+        "return_params": [
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "folderkey",
+            "api_path": "response.folderkey",
+            "optional": true
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "folder_key",
+            "api_path": "response.folder_key",
+            "optional": true
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "uploadkey",
+            "api_path": "response.upload_key"
+        },
+        {
+            "cpp_type": "std::string",
+            "cpp_name": "name",
+            "api_path": "response.name"
+        },
+        {
+            "cpp_type": "boost::posix_time::ptime",
+            "cpp_name": "created_datetime",
+            "api_path": "response.created"
+        },
+        {
+            "cpp_type": "Privacy",
+            "cpp_name": "privacy",
+            "api_path": "response.privacy"
+        },
+        {
+            "cpp_type": "uint32_t",
+            "cpp_name": "revision",
+            "api_path": "response.revision"
+        }
+    ]
+}
