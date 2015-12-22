@@ -26,6 +26,8 @@ public:
     };
 
 public:
+    virtual ~GetFolderContents();
+
     // Some convenience typedefs
     using RequestType = TRequest;
     using ResponseType = typename RequestType::ResponseType;
@@ -81,17 +83,17 @@ private:
                       const FilesOrFoldersOrBoth & files_or_folders_or_both,
                       CallbackType && callback);
 
-    void HandleFolderGetContentsFiles(const ResponseType & response,
-                                      uint32_t chunk_number);
-    void HandleFolderGetContentsFolders(const ResponseType & response,
-                                        uint32_t chunk_number);
+    // void HandleFolderGetContentsFiles(const ResponseType & response,
+    //                                   uint32_t chunk_number);
+    // void HandleFolderGetContentsFolders(const ResponseType & response,
+    //                                     uint32_t chunk_number);
 
     void CoroutineBody(pull_type & yield) override;
 
 private:
     SessionMaintainer * stm_;
 
-    std::string folder_key_;
+    const std::string folder_key_;
 
     std::vector<File> files_;
     std::vector<Folder> folders_;
@@ -100,12 +102,14 @@ private:
 
     FilesOrFoldersOrBoth files_or_folders_or_both_;
 
-    CallbackType callback_;
-    bool file_chunks_remaining_ = false;
-    bool folder_chunks_remaining_ = false;
+    boost::optional<CallbackType> callback_;
 
-    SessionMaintainer::Request files_request_ = nullptr;
-    SessionMaintainer::Request folders_request_ = nullptr;
+    SessionMaintainer::Request request_;
+
+    void FilesBody(pull_type & yield);
+    void FoldersBody(pull_type & yield);
+    void FilesAndFoldersBody(pull_type & yield);
+
 };
 
 }  // namespace mf

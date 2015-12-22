@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <iostream>
 
 #include "boost/coroutine/all.hpp"
 
@@ -19,6 +20,11 @@ private:
     using WorkManagerCompletionHandlerType = std::function<void()>;
 
 protected:
+    Coroutine()
+    {
+        std::cout << __FUNCTION__ << ": Created: " << this << std::endl;
+    }
+
     virtual ~Coroutine() {}
 
 public:
@@ -34,15 +40,22 @@ private:
 private:
     push_type coro_{[this](pull_type & yield)
                     {
-                        CoroutineBody(yield);
-
-                        WorkManagerCompletionHandler();
-
-                        WorkManagerCompletionHandler = nullptr;
-
+                        /* Keep self alive until completion.  Must be created
+                         * before first call to "yield". */
                         auto self = shared_from_this();
-                    }};
 
+                        self->CoroutineBody(yield);
+
+                        std::cout << __FUNCTION__ << ": Running work completion manager." << std::endl;
+
+                        self->WorkManagerCompletionHandler();
+
+                        std::cout << __FUNCTION__ << ": Done running work completion manager." << std::endl;
+
+                        self->WorkManagerCompletionHandler = nullptr;
+
+                        std::cout << __FUNCTION__ << ": Ending." << std::endl;
+                    }};
 
     WorkManagerCompletionHandlerType WorkManagerCompletionHandler = [](){};
 

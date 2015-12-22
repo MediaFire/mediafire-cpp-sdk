@@ -135,19 +135,26 @@ BOOST_AUTO_TEST_CASE(UTGetContentFilesAndFolders)
                     const ResponseTypeFolders & response_folders,
                     const std::vector<GetFolderContentType::ErrorType> & errors)
     {
+        std::cout << __FUNCTION__ << ": In callback in unit test." << std::endl;
+
         if (!errors.empty())
             BOOST_FAIL("GetFolderContents returned errors");
 
         io_service.stop();
+
+        std::cout << __FUNCTION__ << ": Stopped IO SERVICE" << std::endl;
     };
 
     auto get_folder_contents = GetFolderContentType::Create(
             &stm, root_folderkey,
             GetFolderContentType::FilesOrFoldersOrBoth::Both,
             std::move(HandleGetFolderContents));
+
     get_folder_contents->Start();
 
     io_service.run();
+
+    std::cout << __FUNCTION__ << ": Done running." << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(UTCloneCloudTree)
