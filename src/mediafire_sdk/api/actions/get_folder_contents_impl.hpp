@@ -211,8 +211,13 @@ void GetFolderContents<TRequest>::CoroutineBody(pull_type & yield)
 
     if (cancelled_)
     {
+#if defined(__MINGW32__)
+        std::error_code error_code
+                = std::make_error_code(std::errc::interrupted);
+#else
         std::error_code error_code
                 = std::make_error_code(std::errc::operation_canceled);
+#endif
         boost::optional<std::string> error_string(std::string("Cancelled"));
         errors_.push_back(
                 ErrorType(folder_key_, files_or_folders_or_both_,
