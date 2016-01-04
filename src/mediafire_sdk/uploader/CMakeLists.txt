@@ -50,7 +50,6 @@ endforeach()
 
 add_definitions(
     -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
-    -DBOOST_MPL_LIMIT_VECTOR_SIZE=40 # Set max MSM transitions
     -DBOOST_MPL_LIMIT_MAP_SIZE=40 # Set max MSM transitions
     -DFUSION_MAX_VECTOR_SIZE=20 # Set max MSM states
 )

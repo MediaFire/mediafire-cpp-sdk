@@ -14,6 +14,7 @@
 #include "boost/msm/back/state_machine.hpp"
 #include "boost/msm/front/state_machine_def.hpp"
 #include <boost/msm/front/functor_row.hpp>
+#include "boost/mpl/vector/vector10.hpp"
 
 #include "mediafire_sdk/utils/error.hpp"
 #include "mediafire_sdk/utils/fileio.hpp"
@@ -84,7 +85,7 @@ public:
     typedef Unstarted initial_state;
 
     // Transition table for Hasher_
-    struct transition_table : mpl::vector<
+    struct transition_table : mpl::vector6<
         //    Start     , Event           , Next    , Action        , Guard
         // ------------ , --------------- , ------- , ------------- , -----
         Row < Unstarted , he::StartHash   , Started , ht::OpenFile  , none  >,
