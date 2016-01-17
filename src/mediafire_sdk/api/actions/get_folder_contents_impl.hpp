@@ -58,12 +58,6 @@ template <class TRequest>
 void GetFolderContents<TRequest>::Cancel()
 {
     cancelled_ = true;
-
-    if (files_request_ != nullptr)
-        files_request_->Cancel();
-
-    if (folders_request_ != nullptr)
-        folders_request_->Cancel();
 }
 
 template <class TRequest>
@@ -143,13 +137,11 @@ void GetFolderContents<TRequest>::HandleFolderGetContentsFolders(
 template <class TRequest>
 void GetFolderContents<TRequest>::CoroutineBody(pull_type & yield)
 {
-    auto self = shared_from_this();  // Hold a reference to our
-    // object until the coroutine
-    // is complete, otherwise
-    // handler will have invalid
-    // reference to this because
-    // the base object has
-    // disappeared from scope
+    auto self = shared_from_this(); /* Hold a reference to our object until the
+                                       coroutine is complete, otherwise handler
+                                       will have invalid reference to this
+                                       because the base object has disappeared
+                                       from scope */
 
     // The chunk number for each content type of call respectively
     int files_chunk_num = 1;
@@ -178,9 +170,6 @@ void GetFolderContents<TRequest>::CoroutineBody(pull_type & yield)
                                              ContentType::Files),
                                  HandleFolderGetContentsFiles);
 
-            if (cancelled_)
-                files_request_->Cancel();
-
             ++yield_count;
         }
 
@@ -202,8 +191,6 @@ void GetFolderContents<TRequest>::CoroutineBody(pull_type & yield)
                     = stm_->Call(RequestType(folder_key_, folders_chunk_num,
                                              ContentType::Folders),
                                  HandleFolderGetContentsFolders);
-            if (cancelled_)
-                folders_request_->Cancel();
 
             ++yield_count;
         }
@@ -220,6 +207,22 @@ void GetFolderContents<TRequest>::CoroutineBody(pull_type & yield)
         // Update the chunk number
         if (file_chunks_remaining_)
             ++files_chunk_num;
+    }
+
+    if (cancelled_)
+    {
+#if defined(__MINGW32__)
+        std::error_code error_code
+                = std::make_error_code(std::errc::interrupted);
+#else
+        std::error_code error_code
+                = std::make_error_code(std::errc::operation_canceled);
+#endif
+        boost::optional<std::string> error_string(std::string("Cancelled"));
+        errors_.push_back(
+                ErrorType(folder_key_, files_or_folders_or_both_,
+                          std::max(files_chunk_num, folders_chunk_num),
+                          error_code, error_string));
     }
 
     // Coroutine is done, so call the callback.

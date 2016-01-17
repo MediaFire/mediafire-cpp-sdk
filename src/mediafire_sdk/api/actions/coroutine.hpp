@@ -34,15 +34,16 @@ private:
 private:
     push_type coro_{[this](pull_type & yield)
                     {
-                        CoroutineBody(yield);
-
-                        WorkManagerCompletionHandler();
-
-                        WorkManagerCompletionHandler = nullptr;
-
+                        /* Keep self alive until completion.  Must be created
+                         * before first call to "yield". */
                         auto self = shared_from_this();
-                    }};
 
+                        self->CoroutineBody(yield);
+
+                        self->WorkManagerCompletionHandler();
+
+                        self->WorkManagerCompletionHandler = [](){};
+                    }};
 
     WorkManagerCompletionHandlerType WorkManagerCompletionHandler = [](){};
 
