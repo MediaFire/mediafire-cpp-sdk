@@ -498,14 +498,14 @@ def get_cpp_post_data_impl_decl(api):
         return '''
     mf::http::SharedBuffer::Pointer GetPostData();
 
-    mf::api::RequestMethod GetRequestMethod() const
+    mf::api::RequestMethod GetRequestMethod() const override
     {
         return mf::api::RequestMethod::Post;
     }
 '''
     else:
         return '''
-    mf::api::RequestMethod GetRequestMethod() const
+    mf::api::RequestMethod GetRequestMethod() const override
     {
         return mf::api::RequestMethod::Get;
     }

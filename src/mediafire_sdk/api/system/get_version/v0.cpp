@@ -45,7 +45,7 @@ public:
 
     virtual void ParseResponse( Response * response ) override;
 
-    mf::api::RequestMethod GetRequestMethod() const
+    mf::api::RequestMethod GetRequestMethod() const override
     {
         return mf::api::RequestMethod::Get;
     }
